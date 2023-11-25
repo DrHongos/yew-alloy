@@ -2,14 +2,14 @@ use yew::prelude::*;
 use foundry_block_explorers::{Client, gas::GasOracle};
 use std::sync::Arc;
 use alloy_chains::Chain;
-use ruint::Uint;
 use gloo_timers::callback::Interval;
-
+use crate::components::gas_station::GasStation;
 /* 
 TODO: 
 - agregar plot?
 - listar gas historico
 - connect wallet
+- guardar ETHERSCAN_API_KEY in localstorage
 - agregar mas funciones
 -   foundry_block_explorer
 -   alloy
@@ -128,9 +128,11 @@ impl Component for Track {
                 if let Some(gas) = &self.gas {
                     <div class={"container"}>
                         <p>{"Block: "} {gas.last_block}</p>
-                        <p>{"Safe: "} {gas.safe_gas_price.checked_div(Uint::from(1000000000))}</p>
-                        <p>{"Proposed: "} {gas.propose_gas_price.div_ceil(Uint::from(1000000000))}</p>
-                        <p>{"Fast: "} {gas.fast_gas_price.div_ceil(Uint::from(1000000000))}</p>
+                        <GasStation 
+                            safe={gas.safe_gas_price}
+                            fast={gas.fast_gas_price}
+                            proposed={gas.propose_gas_price}
+                        />
                         if let Some(err) = &self.errors {
                             <p>{err}</p>
                         }
