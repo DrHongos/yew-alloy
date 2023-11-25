@@ -6,8 +6,8 @@ use gloo_timers::callback::Interval;
 use crate::components::gas_station::GasStation;
 /* 
 TODO: 
-- agregar plot?
-- listar gas historico
+- agregar plot de gas <
+
 - connect wallet
 - guardar ETHERSCAN_API_KEY in localstorage
 - agregar mas funciones
@@ -17,6 +17,7 @@ TODO:
 */
 
 pub enum TrackMsg {
+    Pass,               // nothing happens
     FetchGas,
     GasOracle(GasOracle),
     SetError(String),
@@ -68,17 +69,28 @@ impl Component for Track {
             }, */
             TrackMsg::FetchGas => {
                 let client = Arc::clone(&self.client.as_ref().unwrap());
+                let last_block = match &self.gas {
+                    Some(go) => go.last_block,
+                    None => 0
+                };
                 ctx.link().send_future(async move {
                     if let Ok(go) = client.gas_oracle()
                         .await
-                        {
-                            TrackMsg::GasOracle(go)
+                        {                            
+                            if go.last_block != last_block {
+                                TrackMsg::GasOracle(go)
+                            } else {
+                                TrackMsg::Pass
+                            }
                         } else {
                             TrackMsg::SetError("Missed block".to_string()) 
                         }
                     });
                 false
             },
+            TrackMsg::Pass => {
+                false
+            }
             TrackMsg::SetError(err) => {
                 self.errors = Some(err);
                 true
