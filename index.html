@@ -4,5 +4,21 @@
     <meta charset="utf-8" />
     <title>Yew-Alloy</title>
     <link data-trunk rel="sass" href="index.scss" />
+    <!-- D3 -->
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <!-- MetaMask --> 
+    <script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
+    <script>
+      const sdk = new MetaMaskSDK.MetaMaskSDK({
+        dappMetadata: {
+          name: "Yew-Alloy-Dapp",
+          url: window.location.host,
+        },
+        logging: {
+          sdk: false,
+        }
+      });
+    </script>
+
   </head>
 </html>

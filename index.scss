@@ -23,8 +23,8 @@ main {
   height: 60px;
 }
 
-.heart:after {
-  content: "❤️";
+.burn:after {
+  content: "🔥";
 
   font-size: 1.75em;
 }
@@ -41,4 +41,23 @@ h1 + .subtitle {
   border-radius: 5px;
 //  background: linear-gradient(#e66465, #9198e5);
   color: black;
+}
+.gasChart {
+/*   margin: 10px;
+  padding: 10px;
+  max-width: 200px;
+  background-color: antiquewhite;
+  border-radius: 10px;
+  border: 2px solid snow; */
+  path {
+ //     stroke: steelblue;
+      stroke-width: 2;
+      fill: none;
+  }
+  .axis path, .axis line {
+      fill: none;
+      stroke: grey;
+      stroke-width: 1;
+      shape-rendering: crispEdges;
+  }
 }

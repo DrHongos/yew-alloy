@@ -1,10 +1,9 @@
-use ruint::{aliases::U256, Uint};
+use ruint::aliases::U256;
 use yew::{function_component, html, Html, Properties};
+use crate::helpers::format_gas;
 /* 
 TODO:
-play more with presentation
-linear-gradient
-burn limit (and show)
+make a sole component, nice to the eye!
 
 */
 #[derive(Properties, PartialEq)]
@@ -14,35 +13,32 @@ pub struct Props {
     pub fast: U256,
 }
 
-fn format_units(val: U256) -> usize {
-    match val.checked_div(Uint::from(1000000000)) {
-        Some(v) => v.try_into().unwrap(),
-        None => 0
-    }
-}
 
 #[function_component]
 pub fn GasStation(props: &Props) -> Html {
     html! {
     <table 
-        style= {format!("background: linear-gradient(rgba(1,1,{},0.4), rgba({}, 1, 1, 0.6))", format_units(props.safe), format_units(props.fast))}
+        style= {format!("background: linear-gradient(rgba(1,1,{},0.4), rgba({}, 1, 1, 0.6))", format_gas(props.safe), format_gas(props.fast))}
         class={"gasStation"}
         >
+        if format_gas(props.safe) >= 22 {
+            <i class="burn" />
+        }
         <tr>
             <th>{"Safe: "}</th>
             <td
-                style={format!("font-size: {}px", format_units(props.safe))}
-            >{format_units(props.safe)}</td>
+                style={format!("font-size: {}px", format_gas(props.safe))}
+            >{format_gas(props.safe)}</td>
         </tr>
         <tr>
             <th>{"Proposed: "}</th> 
-            <td>{format_units(props.proposed)}</td>
+            <td>{format_gas(props.proposed)}</td>
         </tr>
         <tr>
             <th>{"Fast: "}</th>
             <td
-                style={format!("font-size: {}px", format_units(props.fast))}
-            >{format_units(props.fast)}</td>
+                style={format!("font-size: {}px", format_gas(props.fast))}
+            >{format_gas(props.fast)}</td>
         </tr>
     </table> 
     }
