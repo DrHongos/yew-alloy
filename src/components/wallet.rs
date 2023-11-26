@@ -76,9 +76,11 @@ impl Component for Wallet {
                     match getChainId().await {
                         Ok(chain_id) => {
                             let chain_id_s: String = serde_wasm_bindgen::from_value(chain_id).unwrap();
-                            let chain_id_sp = &chain_id_s[2..];
-                            let chain_id_n = chain_id_sp.parse::<u64>().unwrap();
-                            let c = Chain::from_id(chain_id_n);
+                            let c = i64::from_str_radix(
+                                &chain_id_s.trim_start_matches("0x"), 
+                                16
+                            ).unwrap();
+                            let c = Chain::from_id(c.try_into().unwrap());
                             WalletMsg::SetChainId(c)
                         },
                         Err(_err) => WalletMsg::SetError("No chain".to_string())

@@ -15,8 +15,12 @@ export async function getChainId() {
       method: 'eth_chainId',
       params: [],
     })
+  //console.log(`chain id ${chainId}`)
   return chainId
 } 
 
 // try to get the connected status persistent
 // implement all metamask requests!
+
+
+// also check https://github.com/MetaMask/metamask-sdk/blob/main/packages/examples/pure-javascript/index.html
