@@ -6,7 +6,18 @@ use crate::components::{
 
 /* 
 TODO: 
-- create metamask SDK shims!        <
+- move metamask to a context https://yew.rs/docs/concepts/contexts
+- create metamask SDK shims
+    - un/suscribe
+    https://docs.metamask.io/wallet/reference/eth_subscribe/
+        - newheads
+        - logs
+        - pending transactions
+        - syncing
+
+    - would be great if we use foundry-block-explorers (or eth_getCode) to GET SOME CONTRACT CODE
+        then detect its events
+        and offer subscription directly
 
 - guardar ETHERSCAN_API_KEY in localstorage (web-sys)
 - agregar mas funciones

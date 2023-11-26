@@ -15,7 +15,16 @@ extern "C" {
     #[wasm_bindgen(js_name="getChainId")]
     #[wasm_bindgen(catch)]
     pub async fn getChainId() -> Result<JsValue, JsValue>;
+    
+    #[wasm_bindgen(js_name="getClientVersion")]
+    #[wasm_bindgen(catch)]
+    pub async fn getClientVersion() -> Result<JsValue, JsValue>;
+/* 
 
+    #[wasm_bindgen(js_name="getChainId")]
+    #[wasm_bindgen(catch)]
+    pub async fn getChainId() -> Result<JsValue, JsValue>;
+*/
 }
 pub enum WalletMsg {
     ConnectMetamask,
@@ -23,11 +32,14 @@ pub enum WalletMsg {
     SetError(String),
     SetAccount(String),
     SetChainId(Chain),
+    GetClientVersion,
+    SetClientVersion(String),
 } 
 
 pub struct Wallet {
     account: Option<String>,
     chain_id: Option<Chain>,
+    version: Option<String>,
     pub errors: Option<String>,
 }
 
@@ -42,6 +54,7 @@ impl Component for Wallet {
         Self {
             account: None,
             chain_id: None,
+            version: None,
             errors: None,
         }
     }
@@ -69,6 +82,7 @@ impl Component for Wallet {
             WalletMsg::SetAccount(acc) => {
                 self.account = Some(acc);
                 ctx.link().send_message(WalletMsg::GetChainId);
+                ctx.link().send_message(WalletMsg::GetClientVersion);
                 true
             },
             WalletMsg::GetChainId => {
@@ -91,15 +105,34 @@ impl Component for Wallet {
             WalletMsg::SetChainId(chain_id) => {
                 self.chain_id = Some(chain_id);
                 true
+            },
+            WalletMsg::GetClientVersion => {
+                ctx.link().send_future(async move {
+                    match getClientVersion().await {
+                        Ok(v) => {
+                            let version: String = serde_wasm_bindgen::from_value(v).unwrap();
+                            WalletMsg::SetClientVersion(version)
+                        },
+                        Err(err) => {
+                            let err_f: String = serde_wasm_bindgen::from_value(err).unwrap();
+                            WalletMsg::SetError(err_f)
+                        }
+                    }
+                });
+                false
+            },
+            WalletMsg::SetClientVersion(v) => {
+                self.version = Some(v);
+                true
             }
 
         }
     }
     fn view(&self, ctx: &Context<Self>) -> Html {
-        match (&self.account, &self.chain_id) {
-            (Some(acc), Some(chain_id)) => {
+        match (&self.account, &self.chain_id, &self.version) {
+            (Some(acc), Some(chain_id), Some(version)) => {
                     html!(
-                        <p>{format!("Connected as {} in {}", acc, chain_id)}</p>
+                        <p>{format!("Connected as {} in {} with {}", acc, chain_id, version)}</p>
                     )
             },
             _ => {

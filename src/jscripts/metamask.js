@@ -19,8 +19,17 @@ export async function getChainId() {
   return chainId
 } 
 
-// try to get the connected status persistent
+export async function getClientVersion() {
+  const version = await ethereum
+    .request({
+      method: 'web3_clientVersion',
+      params: [],
+    })
+  //console.log(`version: ${version}`)
+  return version
+} 
+
+
+
 // implement all metamask requests!
-
-
 // also check https://github.com/MetaMask/metamask-sdk/blob/main/packages/examples/pure-javascript/index.html
