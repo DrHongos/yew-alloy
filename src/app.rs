@@ -1,6 +1,6 @@
 use yew::prelude::*;
 use crate::components::{
-    gas_track::GasTrack,
+//    gas_track::GasTrack,
     wallet::Wallet,
 };
 
@@ -33,9 +33,9 @@ pub fn app() -> Html {
             <img class="logo" src="https://yew.rs/img/logo.png" alt="Yew logo" />
             <h1>{ "Ahoy Alloy!" }</h1>
             <a href="https://github.com/alloy-rs">{"github"}</a>
-            
+        
             <Wallet />
-            <GasTrack />
+            /* <GasTrack /> */
         </main>
-    }
+        }
 }

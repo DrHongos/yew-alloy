@@ -29,7 +29,15 @@ export async function getClientVersion() {
   return version
 } 
 
+export async function handleAccountsChanged(accounts) {
+  console.log(`account changed ${accounts}`)
+  return accounts
+}
 
+export async function listenAccountsChanged() {
+  console.log("Creating account listener")
+  ethereum.on('accountsChanged', handleAccountsChanged)
+}
 
 // implement all metamask requests!
 // also check https://github.com/MetaMask/metamask-sdk/blob/main/packages/examples/pure-javascript/index.html
