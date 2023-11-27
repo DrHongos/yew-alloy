@@ -40,9 +40,18 @@ impl Provider {
     pub fn on(self, event: String, callback: Box<dyn FnMut(Event)>) -> Result<(), JsValue>{
         // doc: https://rustwasm.github.io/wasm-bindgen/examples/paint.html
         let closure = Closure::wrap(callback);
-        return EventTarget::from(
-            self.this
-        ).add_event_listener_with_callback(&event, closure.as_ref().unchecked_ref())
+// do not detect events
+//        let et = EventTarget::new().unwrap();
+        let et = web_sys::window().unwrap();
+// gives errors
+//        let et = EventTarget::from(self.this);        // error is in here!
+//        let et = EventTarget::unchecked_from_js(self.this);   // same error
+
+
+
+        //println!("{:#?}", et);
+        return et.add_event_listener_with_callback(&event, closure.as_ref().unchecked_ref())
+//        Ok(())
     }
 
     pub async fn async_request(self, method: String, params: Option<Vec<String>> ) -> Result<JsValue, JsValue> {

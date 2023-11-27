@@ -3,52 +3,30 @@ use yew::prelude::*;
 use alloy_chains::Chain;
 use crate::components::wallet::html::Scope;
 use crate::eip1193::Provider;
-//use serde::Serialize;
-//use wasm_bindgen::JsValue;
-//use crate::helpers::format_gas;
 
 /* 
 TODO:
-- implement listeners (wasm-bindgen::on)
-
-
+- implement listeners
+- get balance
 
 */
 
-#[wasm_bindgen(module = "/src/jscripts/metamask.js")]
+#[wasm_bindgen]
 extern "C" {
-/* 
-    #[wasm_bindgen(js_name="connect")]
-    #[wasm_bindgen(catch)]
-    pub async fn connect() -> Result<JsValue, JsValue>;
-
-    #[wasm_bindgen(js_name="getChainId")]
-    #[wasm_bindgen(catch)]
-    pub async fn getChainId() -> Result<JsValue, JsValue>;
-    
-    #[wasm_bindgen(js_name="getClientVersion")]
-    #[wasm_bindgen(catch)]
-    pub async fn getClientVersion() -> Result<JsValue, JsValue>;
- */
-/* 
-     #[wasm_bindgen(js_name="listenAccountsChanged")]
-//    #[wasm_bindgen(catch)]
-    pub async fn listenAccountsChanged() -> JsValue;
-
-    #[wasm_bindgen(js_name="handleAccountsChanged")]
-    #[wasm_bindgen(catch)]
-    pub async fn handleAccountsChanged() -> Result<JsValue, JsValue>;
- */
     // if i have a "Provider" like object, i can simply call "requests" (https://github.com/ZeroProphet/EIP1193_rs/blob/master/example/yewapp/)
     #[wasm_bindgen(js_namespace=["window","ethereum"], js_name="request")]
     pub fn request(m: &str);
 
-    
-
+    #[wasm_bindgen(js_namespace=["console"])]
+    pub fn log(value: &str);
+    /*   
+        #[wasm_bindgen(js_namespace=["window","ethereum"]/* , js_name="on" */)]
+        pub fn on(m: &str);
+     */
 }
 pub enum WalletMsg {
-    Pass,
     ConnectMetamask,
+//    Disconnect,
     GetChainId,
     SetError(String),
     SetAccount(JsValue),
@@ -64,6 +42,7 @@ pub struct Wallet {
     pub errors: Option<String>,
     // eip1193 method
     provider: Provider,
+    
 
 }
 
@@ -108,40 +87,46 @@ impl Component for Wallet {
                         }
                     })
                 );
-
-/* 
-method with direct shims 
-                ctx.link().send_future(async move {
-                    match connect().await {
-                        Ok(accs) => {
-                            WalletMsg::SetAccount(accs)
-                        },
-                        Err(_err) => {
-                            WalletMsg::SetError("No metamask!".to_owned())
-                        },
-                    }
-                });
- */
                 false
             }
             WalletMsg::SetError(err) => {
                 self.errors = Some(err);
                 true
             },
-            WalletMsg::Pass => {false},
+            /* 
+            WalletMsg::Disconnect => {
+                self.account = None;
+                self.chain_id = None;
+                let provider = self.provider.clone();
+                provider.on(
+                    "disconnect".into(), 
+                    Box::new(|_| {})
+                ).expect("No disconnect callback set");
+                true
+            }, 
+            */
             WalletMsg::SetAccount(accs) => {
                 let accounts: Vec<String> = serde_wasm_bindgen::from_value(accs).unwrap();
                 if let Some(acc) = accounts.first() {
                     self.account = Some(acc.to_string());
                     ctx.link().send_message(WalletMsg::GetChainId);
                     ctx.link().send_message(WalletMsg::GetClientVersion);
-                    /* ctx.link().send_future(async move {
-                        let _ = listenAccountsChanged().await;
-                        match handleAccountsChanged().await {
-                            Ok(r) => WalletMsg::SetAccount(r),
-                            _ => WalletMsg::Pass,
-                        } 
-                    }); */
+                    let link = ctx.link().clone();
+                    let provider = self.provider.clone();
+                    
+                    
+                    provider.on(
+                        "accountsChanged".into(), 
+                        //"chainChanged".into(),
+                        Box::new(
+                            move |s| {
+                            log(format!("{:#?}", &s).as_str());
+                            let t = s.target().unwrap().as_string().unwrap();
+                            //let accs: Vec<String> = t.split(",").into_iter().map(|i| i.into()).collect();                            
+                            link.send_message(WalletMsg::SetAccount(JsValue::from_str(&t)))
+                        })
+                    ).expect("Cannot set accountsChanged listener");
+                    
                 }
                 true
             },
@@ -226,6 +211,9 @@ method with direct shims
         html!(
             <table>
                 if let Some(chain) = &self.chain_id {
+                    /* <button
+                        onclick={ctx.link().callback(|_| WalletMsg::Disconnect)}
+                    >{"Disconnect"}</button> */
                     <tr>
                         <th>{"Chain"}</th>
                         <td>{chain}</td>
@@ -253,7 +241,7 @@ method with direct shims
                         <th>{"errors"}</th>
                         <td>{error}</td>
                     </tr>
-                }
+                }                
             </table>
         )
     }
