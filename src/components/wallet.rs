@@ -1,49 +1,56 @@
+use foundry_block_explorers::block_number::BlockNumber;
+use ruint::aliases::U256;
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
 use alloy_chains::Chain;
+//use alloy_providers::Provider;
+//use alloy_transport_http::Http;
 use crate::components::wallet::html::Scope;
-use crate::eip1193::Provider;
+use eip1193::Provider as EIP1193Provider;
+use crate::helpers::format_eth;
 
 /* 
 TODO:
-- implement listeners
-- get balance
-
+- get native token (maybe contribute to alloy-chains?)
+- exhaust EIP1193 tests
+    - eth_suscribe (and unsuscribe) + event listener (message) from frontend!
+- error handling
+- check EIP6963
+- parse alloy-provider?
 */
 
 #[wasm_bindgen]
 extern "C" {
-    // if i have a "Provider" like object, i can simply call "requests" (https://github.com/ZeroProphet/EIP1193_rs/blob/master/example/yewapp/)
-    #[wasm_bindgen(js_namespace=["window","ethereum"], js_name="request")]
-    pub fn request(m: &str);
+// if i have a "Provider" like object, i can simply call "requests" (https://github.com/ZeroProphet/EIP1193_rs/blob/master/example/yewapp/)
+//    #[wasm_bindgen(js_namespace=["window","ethereum"], js_name="request")]
+//    pub fn request(m: &str);
 
     #[wasm_bindgen(js_namespace=["console"])]
-    pub fn log(value: &str);
-    /*   
-        #[wasm_bindgen(js_namespace=["window","ethereum"]/* , js_name="on" */)]
-        pub fn on(m: &str);
-     */
+    pub fn log(value: &str);    
 }
+
 pub enum WalletMsg {
     ConnectMetamask,
 //    Disconnect,
+    SetListeners,
     GetChainId,
+    GetClientVersion,
+    GetBalance(String),
     SetError(String),
     SetAccount(JsValue),
-    SetChainId(Chain),
-    GetClientVersion,
+    SetChain(JsValue),
     SetClientVersion(String),
+    SetBalance(U256),
 } 
 
 pub struct Wallet {
     account: Option<String>,
-    chain_id: Option<Chain>,
+    chain: Option<Chain>,
     version: Option<String>,
     pub errors: Option<String>,
+    balance: U256,
     // eip1193 method
-    provider: Provider,
-    
-
+    provider: EIP1193Provider,         // try to make it optional
 }
 
 impl Component for Wallet {
@@ -54,20 +61,23 @@ impl Component for Wallet {
         ctx.link().send_future(async move {
             WalletMsg::ConnectMetamask
         });
+        let new_provider = EIP1193Provider::new();
+
         Self {
             account: None,
-            chain_id: None,
+            chain: None,
             version: None,
             errors: None,
-            provider: Provider::new(),
+            provider: new_provider,
+            balance: U256::from(0)
         }
     }
     
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             WalletMsg::ConnectMetamask => {
-// method with eip1193 Provider object 
                 let provider = self.provider.clone();
+                //log(&format!("Provider {:#?}", JSON::parse(&provider.this)));
                 let link = ctx.link().clone();
                 provider.request(
                     "eth_requestAccounts".into(),
@@ -80,6 +90,9 @@ impl Component for Wallet {
                                 link.send_message(
                                     WalletMsg::SetAccount(r)
                                 );
+                                link.send_message(WalletMsg::GetClientVersion);
+                                link.send_message(WalletMsg::SetListeners);
+                                link.send_message(WalletMsg::GetChainId);              
                             }
                             Err(_e) => {
                                 link.send_message(WalletMsg::SetError("Error on callback".to_string()))
@@ -87,46 +100,20 @@ impl Component for Wallet {
                         }
                     })
                 );
+
                 false
             }
             WalletMsg::SetError(err) => {
                 self.errors = Some(err);
                 true
             },
-            /* 
-            WalletMsg::Disconnect => {
-                self.account = None;
-                self.chain_id = None;
-                let provider = self.provider.clone();
-                provider.on(
-                    "disconnect".into(), 
-                    Box::new(|_| {})
-                ).expect("No disconnect callback set");
-                true
-            }, 
-            */
             WalletMsg::SetAccount(accs) => {
                 let accounts: Vec<String> = serde_wasm_bindgen::from_value(accs).unwrap();
                 if let Some(acc) = accounts.first() {
-                    self.account = Some(acc.to_string());
-                    ctx.link().send_message(WalletMsg::GetChainId);
-                    ctx.link().send_message(WalletMsg::GetClientVersion);
-                    let link = ctx.link().clone();
-                    let provider = self.provider.clone();
-                    
-                    
-                    provider.on(
-                        "accountsChanged".into(), 
-                        //"chainChanged".into(),
-                        Box::new(
-                            move |s| {
-                            log(format!("{:#?}", &s).as_str());
-                            let t = s.target().unwrap().as_string().unwrap();
-                            //let accs: Vec<String> = t.split(",").into_iter().map(|i| i.into()).collect();                            
-                            link.send_message(WalletMsg::SetAccount(JsValue::from_str(&t)))
-                        })
-                    ).expect("Cannot set accountsChanged listener");
-                    
+                    let account = acc.to_string();
+                    self.account = Some(account.clone());
+                    // below are all updates of the connected account
+                    ctx.link().send_message(WalletMsg::GetBalance(account));
                 }
                 true
             },
@@ -141,13 +128,7 @@ impl Component for Wallet {
                         let link = l.downcast_ref::<Scope<Wallet>>().unwrap();
                         match m {
                             Ok(cid) => {
-                                let chain_id_s: String = serde_wasm_bindgen::from_value(cid).unwrap();
-                                let c = i64::from_str_radix(
-                                    &chain_id_s.trim_start_matches("0x"), 
-                                    16
-                                ).unwrap();
-                                let c = Chain::from_id(c.try_into().unwrap());
-                                link.send_message(WalletMsg::SetChainId(c))
+                                link.send_message(WalletMsg::SetChain(cid))
                             },
                             Err(_e) => {
                                 link.send_message(WalletMsg::SetError("No chain".to_string()))                              
@@ -155,27 +136,69 @@ impl Component for Wallet {
                         }
                     })
                 );
-/* 
-                ctx.link().send_future(async move { 
-                    match getChainId().await {
-                        Ok(chain_id) => {
-                            let chain_id_s: String = serde_wasm_bindgen::from_value(chain_id).unwrap();
-                            let c = i64::from_str_radix(
-                                &chain_id_s.trim_start_matches("0x"), 
-                                16
-                            ).unwrap();
-                            let c = Chain::from_id(c.try_into().unwrap());
-                            WalletMsg::SetChainId(c)
-                        },
-                        Err(_err) => WalletMsg::SetError("No chain".to_string())
-                    }
-                });
-*/
                 false
             },
-            WalletMsg::SetChainId(chain_id) => {
-                self.chain_id = Some(chain_id);
+            WalletMsg::SetListeners => {                    
+                let provider = self.provider.clone();
+                let link = ctx.link().clone();
+                let link2 = ctx.link().clone(); 
+
+                provider.clone().on(
+                    "accountsChanged".into(), 
+                    Box::new(
+                        move |s| {
+                            link.send_message(WalletMsg::SetAccount(s.into()))
+                        })
+                );
+                provider.on(
+                    "chainChanged".into(),
+                    Box::new(
+                        move |s| {
+                            link2.send_message(WalletMsg::SetChain(s.into()))
+                        })
+                );
+                
+                false
+            },
+            WalletMsg::SetChain(chain_id) => {
+                let chain_id_s: String = serde_wasm_bindgen::from_value(chain_id).unwrap();
+                let c = i64::from_str_radix(
+                    &chain_id_s.trim_start_matches("0x"), 
+                    16
+                ).unwrap();
+                let c = Chain::from_id(c.try_into().unwrap());
+                self.chain = Some(c);
+                ctx.link().send_message(WalletMsg::GetBalance(self.account.clone().unwrap()));
                 true
+            },
+            WalletMsg::GetBalance(account) => {
+                let provider = self.provider.clone();
+                let link = ctx.link().clone();
+                log("Check balance");
+                provider.request(   
+                    "eth_getBalance".into(),
+                    Some(vec![
+                        account, 
+                        //BlockNumber::Latest.to_string(),
+                        ]),
+                        Box::new(link),
+                        Box::new(|m, l| {
+                            let linkk = l.downcast_ref::<Scope<Wallet>>().unwrap();
+                            match m {
+                            Ok(b) => {
+                                let bal: U256 = serde_wasm_bindgen::from_value(b).expect("error parsing balance");
+                                log(format!("Balance: {}", bal).as_str());
+                                linkk.send_message(WalletMsg::SetBalance(bal))
+                            },
+                            Err(err) => {
+                                let err_f: String = serde_wasm_bindgen::from_value(err).unwrap();
+                                log(format!("Error: {}", err_f).as_str());
+                                linkk.send_message(WalletMsg::SetError(err_f))
+                            }
+                        }
+                    })
+                );
+                false
             },
             WalletMsg::GetClientVersion => {
                 let provider = self.provider.clone();
@@ -203,6 +226,10 @@ impl Component for Wallet {
             WalletMsg::SetClientVersion(v) => {
                 self.version = Some(v);
                 true
+            },
+            WalletMsg::SetBalance(b) => {
+                self.balance = b;
+                true
             }
 
         }
@@ -210,7 +237,13 @@ impl Component for Wallet {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html!(
             <table>
-                if let Some(chain) = &self.chain_id {
+                if let Some(account) = &self.account {
+                    <tr>
+                    <th>{"Account"}</th>
+                    <td>{account}</td>
+                    </tr>
+                }
+                if let Some(chain) = &self.chain {
                     /* <button
                         onclick={ctx.link().callback(|_| WalletMsg::Disconnect)}
                     >{"Disconnect"}</button> */
@@ -223,12 +256,12 @@ impl Component for Wallet {
                         onclick={ctx.link().callback(|_| WalletMsg::ConnectMetamask)}
                     >{"connect"}</button>
                 }
-                if let Some(account) = &self.account {
-                    <tr>
-                        <th>{"Account"}</th>
-                        <td>{account}</td>
-                    </tr>
-                }
+                <tr>
+                    <th>{"Balance"}</th>
+                    <td>{format_eth(self.balance)} {"   ETH(?)"}</td>
+                </tr>
+                <hr />                
+                //<tr><th>{"Is metamask"}</th><td>{self.provider.is_metamask}</td></tr>
                 if let Some(version) = &self.version {
                     <tr>
                         <th>{"version"}</th>

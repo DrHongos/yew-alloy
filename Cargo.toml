@@ -20,5 +20,8 @@ serde = "1.0.193"
 serde-wasm-bindgen = "0.6.1"
 wasm-bindgen = {version = "0.2.88", features = ["serde-serialize"]}
 wasm-bindgen-futures = "0.4.38"
-web-sys = {version="0.3.65", features = ["Event", "EventTarget"]}
+web-sys = {version="0.3.65", features = ["Window", "Event", "EventTarget"]}
 yew = { version="0.20", features=["csr"] }
+eip1193 = { path="../EIP1193_rs" }
+alloy-providers = { path="../alloy/crates/providers" }
+#alloy-transport-http = { path="../alloy/crates/transport-http" }
