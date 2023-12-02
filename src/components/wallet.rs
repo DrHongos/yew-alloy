@@ -21,7 +21,6 @@ pub fn wallet() -> Html {
         "Connect wallet".into()
     };
     let chain_label = ethereum.chain();
-    
     let eth = ethereum.clone();
     let onclick_ethereum = {
         Callback::from(move |_: MouseEvent| {

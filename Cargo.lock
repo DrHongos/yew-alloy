@@ -1572,6 +1572,8 @@ dependencies = [
 name = "ethers-web"
 version = "0.1.0"
 dependencies = [
+ "alloy-primitives 0.5.2",
+ "alloy-rpc-types",
  "async-trait",
  "chrono",
  "console_error_panic_hook",

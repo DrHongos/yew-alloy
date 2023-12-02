@@ -11,6 +11,14 @@ use ethers_web::{Ethereum, EthereumBuilder, EthereumError, Event, WalletType};
 //use log::{debug, error};
 use serde::Serialize;
 use yew::{platform::spawn_local, prelude::*};
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+extern "C" {
+
+    #[wasm_bindgen(js_namespace=["console"])]
+    pub fn log(value: &str);    
+}
 
 #[derive(Clone, Debug)]
 pub struct UseEthereum {
@@ -45,22 +53,30 @@ impl UseEthereum {
                         Some(Arc::new(move |event| match event {
                             Event::ConnectionWaiting(url) => {
                                 //debug!("{url}");
+                                //log("Event: Connection waiting");
                                 me.pairing_url.set(Some(url));
                             }
                             Event::Connected => {
+                                //log("Event: Connected");
                                 me.connected.set(true);
                                 me.pairing_url.set(None)
                             }
                             Event::Disconnected => me.connected.set(false),
                             Event::ChainIdChanged(chain_id) => {
                                 me.chain_id.set(chain_id);
+                                //log(format!("Event: Chain changed {:#?}", chain_id).as_str());
                                 if let Some(c) = chain_id {
                                     me.chain.set(Some(Chain::from_id(c)))
                                 }
                             },
                             Event::AccountsChanged(accounts) => {
-                                let accounts_parsed = accounts.unwrap().into_iter().map(|a| return Address::from_slice(a.as_bytes())).collect();
-                                me.accounts.set(Some(accounts_parsed))
+                                /* let accounts_parsed = accounts
+                                    .unwrap()
+                                    .into_iter()
+                                    .map(|a| return Address::from_slice(a.as_bytes()))
+                                    .collect(); */
+                                //log(format!("Event: Account changed {:#?}", accounts).as_str());
+                                me.accounts.set(accounts)
                             },
                         })),
                     )
@@ -86,6 +102,7 @@ impl UseEthereum {
         eth.disconnect();
         self.ethereum.set(eth);
         self.connected.set(false);
+        self.chain.set(None);
     }
 
     pub fn is_connected(&self) -> bool {
@@ -104,8 +121,8 @@ impl UseEthereum {
         (*self.chain_id).unwrap_or(0)
     }
 
-    pub fn chain(&self) -> Chain {
-        (*self.chain).unwrap_or(Chain::mainnet())
+    pub fn chain(&self) -> Option<Chain> {
+        *self.chain
     }
 
     pub fn account(&self) -> Address {
