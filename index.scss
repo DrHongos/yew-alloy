@@ -23,6 +23,18 @@ main {
   height: 60px;
 }
 
+.superLogo {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;  
+}
+.heart:after {
+  content: "❤️";
+  margin: 10px;
+  justify-content: center;
+  font-size: 1.75em;
+}
+
 .burn:after {
   content: "🔥";
 

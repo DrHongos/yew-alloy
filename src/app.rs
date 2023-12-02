@@ -1,41 +1,32 @@
 use yew::prelude::*;
+use crate::contexts::provider::EthereumContextProvider;
 use crate::components::{
 //    gas_track::GasTrack,
-    wallet::Wallet,
+    wallet::Wallet,//       Re-do w/ context
 };
 
 /* 
 TODO: 
-- move metamask to a context https://yew.rs/docs/concepts/contexts
-- create metamask SDK shims
-    - un/suscribe
-    https://docs.metamask.io/wallet/reference/eth_subscribe/
-        - newheads
-        - logs
-        - pending transactions
-        - syncing
-
-    - would be great if we use foundry-block-explorers (or eth_getCode) to GET SOME CONTRACT CODE
-        then detect its events
-        and offer subscription directly
-
 - guardar ETHERSCAN_API_KEY in localstorage (web-sys)
-- agregar mas funciones
--   foundry_block_explorer
-    - follow accounts, tokens, nfts, etc
--   alloy
-    - Provider!!
+- create Transport -> Provider for browser wallets -> wasm dapps
+
 */
 #[function_component(App)]
 pub fn app() -> Html {
     html! {
         <main>
-            <img class="logo" src="https://yew.rs/img/logo.png" alt="Yew logo" />
+            <EthereumContextProvider>
             <h1>{ "Ahoy Alloy!" }</h1>
+            <div class="superLogo">
+            <img class="logo" src="https://yew.rs/img/logo.png" alt="Yew logo" />
+            <i class="heart" />
+            <img class="logo" src="https://avatars.githubusercontent.com/u/128098468?s=200&v=4" alt="Yew logo" />
+            </div>
             <a href="https://github.com/alloy-rs">{"github"}</a>
         
             <Wallet />
             /* <GasTrack /> */
+            </EthereumContextProvider>
         </main>
         }
 }
