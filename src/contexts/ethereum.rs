@@ -132,7 +132,7 @@ impl UseEthereum {
         &self,
         data: T,
         from: &Address,
-    ) -> Result<Signature, EthereumError> {
+    ) -> Result<String, EthereumError> {    //<Signature, _>
         (*self.ethereum).sign_typed_data(data, from).await
     }
 }

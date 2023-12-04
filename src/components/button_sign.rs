@@ -138,6 +138,7 @@ pub fn signature_button() -> Html {
                     let signature_res = ethereum
                         .sign_typed_data(jason, &ethereum.account())
                         .await;
+                    
                     log(format!("Signature recovery on hold..{:#?}", signature_res).as_str());
                     /*
                     // Checking signature (not in alloy?)
