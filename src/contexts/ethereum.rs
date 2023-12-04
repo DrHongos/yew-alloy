@@ -1,24 +1,11 @@
 use std::sync::Arc;
-
-//use ethers::{
-//    providers::Provider,
-//    types::{Address, Signature},
-//};
 use alloy_primitives::Address;
 use alloy_rpc_types::Signature;
 use alloy_chains::Chain;
 use ethers_web::{Ethereum, EthereumBuilder, EthereumError, Event, WalletType};
-//use log::{debug, error};
 use serde::Serialize;
 use yew::{platform::spawn_local, prelude::*};
-use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen]
-extern "C" {
-
-    #[wasm_bindgen(js_namespace=["console"])]
-    pub fn log(value: &str);    
-}
+//use crate::helpers::log;
 
 #[derive(Clone, Debug)]
 pub struct UseEthereum {
@@ -140,14 +127,14 @@ impl UseEthereum {
             .unwrap_or(&Address::ZERO)
             .to_string()
     }
-/* discrepancy with the usage of ethers::Address in ethers-web and alloy::Address
+
     pub async fn sign_typed_data<T: Send + Sync + Serialize>(
         &self,
         data: T,
         from: &Address,
     ) -> Result<Signature, EthereumError> {
         (*self.ethereum).sign_typed_data(data, from).await
-    } */
+    }
 }
 
 #[hook]

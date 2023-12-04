@@ -1,3 +1,4 @@
+use wasm_bindgen::prelude::*;
 // HELPERS
 use ruint::{
     Uint,
@@ -14,4 +15,11 @@ pub fn format_gas(val: U256) -> usize {
 pub fn format_eth(val: U256) -> f64 {
     let v: f64 = val.into();
     v/1000000000000000000f64        // parses to 18 decimals
+}
+
+#[wasm_bindgen]
+extern "C" {
+
+    #[wasm_bindgen(js_namespace=["console"])]
+    pub fn log(value: &str);    
 }

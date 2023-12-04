@@ -2,7 +2,8 @@ use yew::prelude::*;
 use crate::contexts::provider::EthereumContextProvider;
 use crate::components::{
 //    gas_track::GasTrack,
-    wallet::Wallet,//       Re-do w/ context
+    wallet::Wallet,
+    button_sign::SignatureButton,
 };
 
 /* 
@@ -23,10 +24,11 @@ pub fn app() -> Html {
             <img class="logo" src="https://avatars.githubusercontent.com/u/128098468?s=200&v=4" alt="Yew logo" />
             </div>
             <a href="https://github.com/alloy-rs">{"github"}</a>
-        
+            <hr />
             <Wallet />
-            /* <GasTrack /> */
+/*             <GasTrack /> */
+            <SignatureButton />
             </EthereumContextProvider>
         </main>
-        }
+    }
 }

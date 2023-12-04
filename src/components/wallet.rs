@@ -9,19 +9,20 @@ pub fn wallet() -> Html {
     );
 
     let wc = use_state(|| false);
-
-    let onclick = {
-        let wc = wc.clone();
-        Callback::from(move |_: MouseEvent| wc.set(!(*wc)))
-    };
-
-    let label = if ethereum.is_connected() {
+    
+    let connected = ethereum.is_connected();
+    let label = if connected {
         ethereum.main_account()
     } else {
         "Connect wallet".into()
     };
     let chain_label = ethereum.chain();
+    
     let eth = ethereum.clone();
+    let onclick = {
+        let wc = wc.clone();
+        Callback::from(move |_: MouseEvent| wc.set(!(*wc)))
+    };
     let onclick_ethereum = {
         Callback::from(move |_: MouseEvent| {
             if ethereum.is_connected() {
@@ -36,10 +37,12 @@ pub fn wallet() -> Html {
         })
     };
     html! {
-        <>
-            <input type="checkbox" {onclick} disabled={!eth.walletconnect_available()}/ ><label>{"Wallet connect"}</label>
-            <button onclick={onclick_ethereum}>{label}</button>
+        <div>
+            <button onclick={onclick_ethereum}>{label}</button><br />
+            if !connected {
+                <input type="checkbox" {onclick} disabled={!eth.walletconnect_available()}/ ><label>{"Wallet connect"}</label>
+            }
             <p>{chain_label}</p>        
-        </>
+        </div>
     }
 }

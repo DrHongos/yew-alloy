@@ -69,10 +69,28 @@ dependencies = [
 ]
 
 [[package]]
-name = "alloy-json-abi"
-version = "0.5.0"
+name = "alloy-dyn-abi"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85cbbc8fcae58f39dbfbdc94ead48de0779910528889aebc074aed75959bffe7"
+checksum = "fafc3b20c6d069d9db47037f34acfb0e079c050fa5c1ff9e79855609b359b92b"
+dependencies = [
+ "alloy-json-abi",
+ "alloy-primitives 0.5.2",
+ "alloy-sol-type-parser",
+ "alloy-sol-types",
+ "const-hex",
+ "derive_more",
+ "itoa",
+ "serde",
+ "serde_json",
+ "winnow",
+]
+
+[[package]]
+name = "alloy-json-abi"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d32061da2f184e5defab8e65a3057f88b7017cfe1ea9e2d6b413edb5ca76a54"
 dependencies = [
  "alloy-primitives 0.5.2",
  "alloy-sol-type-parser",
@@ -209,12 +227,42 @@ dependencies = [
 ]
 
 [[package]]
-name = "alloy-sol-type-parser"
-version = "0.5.0"
+name = "alloy-sol-macro"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc77699fb68c8a2cf18efb2c51df43e09b42b53886c6eb552951b19c41ebfc84"
+checksum = "e40cea54ac58080a1b88ea6556866eac1902b321186c77d53ad2b5ebbbf0e038"
+dependencies = [
+ "const-hex",
+ "dunce",
+ "heck",
+ "indexmap 2.1.0",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.32",
+ "syn-solidity",
+ "tiny-keccak",
+]
+
+[[package]]
+name = "alloy-sol-type-parser"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f23cb462613b2046da46dbf69ebaee458b7bfd3e9d7fe05adcce38a8d4b8a14f"
 dependencies = [
  "winnow",
+]
+
+[[package]]
+name = "alloy-sol-types"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f81aa34725607be118c395d62c1d8d97c8a343dd1ada5370ed508ed5232eab6a"
+dependencies = [
+ "alloy-primitives 0.5.2",
+ "alloy-sol-macro",
+ "const-hex",
+ "serde",
 ]
 
 [[package]]
@@ -795,16 +843,6 @@ checksum = "a06aeb73f470f66dcdbf7223caeebb85984942f22f1adb2a088cf9668146bbbc"
 dependencies = [
  "cfg-if",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "console_log"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be8aed40e4edbf4d3b4431ab260b63fdc40f5780a4766824329ea0f1eefe3c0f"
-dependencies = [
- "log",
- "web-sys",
 ]
 
 [[package]]
@@ -1574,28 +1612,14 @@ version = "0.1.0"
 dependencies = [
  "alloy-primitives 0.5.2",
  "alloy-rpc-types",
- "async-trait",
- "chrono",
- "console_error_panic_hook",
- "console_log",
- "data-encoding",
- "derive_more",
- "ethers",
- "futures",
- "getrandom",
- "gloo 0.10.0",
- "gloo-utils 0.2.0",
  "hex",
  "js-sys",
- "log",
  "qrcode-generator",
- "rand",
  "serde",
  "serde-wasm-bindgen 0.5.0",
  "serde_json",
  "thiserror",
  "unsafe-send-sync",
- "url",
  "walletconnect-client",
  "wasm-bindgen",
  "wasm-bindgen-futures",
@@ -4043,9 +4067,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.103"
+version = "1.0.108"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d03b412469450d4404fe8499a268edd7f8b79fecb074b0d812ad64ca21f4031b"
+checksum = "3d1c7e3eac408d115102c4c24ad393e0821bb3a5df4d506a80f85f7a742a526b"
 dependencies = [
  "itoa",
  "ryu",
@@ -4352,6 +4376,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "syn-solidity"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2c7ad08db24862d5b787a94714ff6b047935c3e3f60af944ac969404debd7ff"
+dependencies = [
+ "paste",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.32",
 ]
 
 [[package]]
@@ -4685,17 +4721,22 @@ name = "trunk-template"
 version = "0.1.0"
 dependencies = [
  "alloy-chains",
+ "alloy-dyn-abi",
  "alloy-json-rpc",
  "alloy-primitives 0.5.2",
  "alloy-providers",
  "alloy-rpc-types",
+ "alloy-sol-macro",
+ "alloy-sol-types",
  "ethers-web",
  "foundry-block-explorers",
  "gloo-timers 0.3.0",
+ "hex",
  "js-sys",
  "ruint",
  "serde",
  "serde-wasm-bindgen 0.6.1",
+ "serde_json",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
