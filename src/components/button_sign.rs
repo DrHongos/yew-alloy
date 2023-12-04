@@ -22,7 +22,7 @@ fn typed_data_for_document(name: &str, chain_id_v: u64) -> TypedData {
             address verifyingContract;
             bytes32 salt;
         }
-        struct Document_Signature {
+        struct DocumentSignature {
             string name;
             string content; 
         }
@@ -30,7 +30,7 @@ fn typed_data_for_document(name: &str, chain_id_v: u64) -> TypedData {
     // create resolver
     let mut graph = Resolver::default();
     graph.ingest_sol_struct::<EIP712Domain>();
-    graph.ingest_sol_struct::<Document_Signature>();
+    graph.ingest_sol_struct::<DocumentSignature>();
     
     TypedData {
         domain: Eip712Domain {
@@ -77,7 +77,7 @@ fn typed_data_for_document(name: &str, chain_id_v: u64) -> TypedData {
             "domain": {
                 "name": "example.metamask.io",
                 "version": "1",
-                "chainId": 1,
+                "chainId": 1,       // same as str (encodes to 1_U256) also U256::from(1) ends up as 0x1
                 "verifyingContract": "0x0000000000000000000000000000000000000000",
                 "salt": s
             },
@@ -85,6 +85,7 @@ fn typed_data_for_document(name: &str, chain_id_v: u64) -> TypedData {
         });
 
         let typed_data: TypedData = serde_json::from_value(json).unwrap();
+        
         // test? FAILED!
         let hash = typed_data.eip712_signing_hash().unwrap();
         log(format!(

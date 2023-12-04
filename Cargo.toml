@@ -22,10 +22,10 @@ wasm-bindgen = {version = "0.2.88", features = ["serde-serialize"]}
 wasm-bindgen-futures = "0.4.38"
 web-sys = {version="0.3.65", features = ["Window", "Event", "EventTarget"]}
 yew = { version="0.20", features=["csr"] }
-alloy-providers = { path="../alloy/crates/providers" }
-alloy-json-rpc = { path="../alloy/crates/json-rpc" }
-alloy-rpc-types = { path="../alloy/crates/rpc-types" }
-ethers-web = { path="../ethers-web" }
+alloy-providers = { path="../../../alloy/crates/providers" }
+alloy-json-rpc = { path="../../../alloy/crates/json-rpc" }
+alloy-rpc-types = { path="../../../alloy/crates/rpc-types" }
+alloy-web = { path="../.." }
 alloy-primitives = "0.5.2"
 serde_json = "1.0.108"
 alloy-dyn-abi = { version = "0.5.2", features = ["eip712"] }

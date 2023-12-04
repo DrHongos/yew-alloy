@@ -1,5 +1,5 @@
 use crate::contexts::ethereum::UseEthereum;
-use ethers_web::WalletType;
+use alloy_web::WalletType;
 use yew::prelude::*;
 
 #[function_component(Wallet)]
