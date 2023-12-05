@@ -10,11 +10,11 @@ use serde_json::{json, Map};
 use yew::{platform::spawn_local, prelude::*};
 use std::borrow::Cow;
 
-const DOCUMENT_SIGNATURE_NAME: &str = "Document_Signature";
+const DOCUMENT_SIGNATURE_NAME: &str = "DocumentSignature";
 const VERIFIER_NAME: &str = "Test App";
 
 fn typed_data_for_document(name: &str, chain_id_v: u64) -> TypedData {
-/*     sol! {
+    sol! {
         struct EIP712Domain {
             string name;
             string version;
@@ -31,7 +31,7 @@ fn typed_data_for_document(name: &str, chain_id_v: u64) -> TypedData {
     let mut graph = Resolver::default();
     graph.ingest_sol_struct::<EIP712Domain>();
     graph.ingest_sol_struct::<DocumentSignature>();
-    
+
     TypedData {
         domain: Eip712Domain {
             name: Some(Cow::Borrowed(VERIFIER_NAME)),
@@ -44,8 +44,8 @@ fn typed_data_for_document(name: &str, chain_id_v: u64) -> TypedData {
         primary_type: DOCUMENT_SIGNATURE_NAME.to_string(),
         message: DocumentDescription::new(name).into_value(),
     }
- */
 
+/* 
     // example test 
         let s: FixedBytes<32> = FixedBytes::ZERO;
         let json = json!({
@@ -95,7 +95,8 @@ fn typed_data_for_document(name: &str, chain_id_v: u64) -> TypedData {
         //
         typed_data
         // end of example
-}
+ */
+    }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DocumentDescription {
@@ -119,6 +120,7 @@ impl DocumentDescription {
         }
     }
 }
+
 #[function_component(SignatureButton)]
 pub fn signature_button() -> Html {
     let ethereum = use_context::<UseEthereum>().expect(

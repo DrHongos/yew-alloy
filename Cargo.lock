@@ -75,7 +75,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fafc3b20c6d069d9db47037f34acfb0e079c050fa5c1ff9e79855609b359b92b"
 dependencies = [
  "alloy-json-abi",
- "alloy-primitives 0.5.2",
+ "alloy-primitives",
  "alloy-sol-type-parser",
  "alloy-sol-types",
  "const-hex",
@@ -92,7 +92,7 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d32061da2f184e5defab8e65a3057f88b7017cfe1ea9e2d6b413edb5ca76a54"
 dependencies = [
- "alloy-primitives 0.5.2",
+ "alloy-primitives",
  "alloy-sol-type-parser",
  "serde",
  "serde_json",
@@ -101,8 +101,9 @@ dependencies = [
 [[package]]
 name = "alloy-json-rpc"
 version = "0.1.0"
+source = "git+https://github.com/alloy-rs/alloy#b675b6bf47a5f2d0819248ec3e92c048ba56686c"
 dependencies = [
- "alloy-primitives 0.4.2",
+ "alloy-primitives",
  "serde",
  "serde_json",
  "thiserror",
@@ -111,30 +112,11 @@ dependencies = [
 [[package]]
 name = "alloy-networks"
 version = "0.1.0"
+source = "git+https://github.com/alloy-rs/alloy#b675b6bf47a5f2d0819248ec3e92c048ba56686c"
 dependencies = [
  "alloy-json-rpc",
- "alloy-primitives 0.4.2",
+ "alloy-primitives",
  "alloy-rlp",
-]
-
-[[package]]
-name = "alloy-primitives"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0628ec0ba5b98b3370bb6be17b12f23bfce8ee4ad83823325a20546d9b03b78"
-dependencies = [
- "alloy-rlp",
- "bytes",
- "cfg-if",
- "const-hex",
- "derive_more",
- "hex-literal",
- "itoa",
- "proptest",
- "rand",
- "ruint",
- "serde",
- "tiny-keccak",
 ]
 
 [[package]]
@@ -160,9 +142,10 @@ dependencies = [
 [[package]]
 name = "alloy-providers"
 version = "0.1.0"
+source = "git+https://github.com/alloy-rs/alloy#b675b6bf47a5f2d0819248ec3e92c048ba56686c"
 dependencies = [
  "alloy-networks",
- "alloy-primitives 0.4.2",
+ "alloy-primitives",
  "alloy-rpc-client",
  "alloy-rpc-types",
  "alloy-transport",
@@ -199,6 +182,7 @@ dependencies = [
 [[package]]
 name = "alloy-rpc-client"
 version = "0.1.0"
+source = "git+https://github.com/alloy-rs/alloy#b675b6bf47a5f2d0819248ec3e92c048ba56686c"
 dependencies = [
  "alloy-json-rpc",
  "alloy-transport",
@@ -215,10 +199,11 @@ dependencies = [
 [[package]]
 name = "alloy-rpc-types"
 version = "0.1.0"
+source = "git+https://github.com/alloy-rs/alloy#b675b6bf47a5f2d0819248ec3e92c048ba56686c"
 dependencies = [
- "alloy-primitives 0.4.2",
+ "alloy-primitives",
  "alloy-rlp",
- "itertools 0.11.0",
+ "itertools 0.12.0",
  "jsonrpsee-types",
  "serde",
  "serde_json",
@@ -259,7 +244,7 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f81aa34725607be118c395d62c1d8d97c8a343dd1ada5370ed508ed5232eab6a"
 dependencies = [
- "alloy-primitives 0.5.2",
+ "alloy-primitives",
  "alloy-sol-macro",
  "const-hex",
  "serde",
@@ -268,6 +253,7 @@ dependencies = [
 [[package]]
 name = "alloy-transport"
 version = "0.1.0"
+source = "git+https://github.com/alloy-rs/alloy#b675b6bf47a5f2d0819248ec3e92c048ba56686c"
 dependencies = [
  "alloy-json-rpc",
  "base64 0.21.5",
@@ -283,6 +269,7 @@ dependencies = [
 [[package]]
 name = "alloy-transport-http"
 version = "0.1.0"
+source = "git+https://github.com/alloy-rs/alloy#b675b6bf47a5f2d0819248ec3e92c048ba56686c"
 dependencies = [
  "alloy-json-rpc",
  "alloy-transport",
@@ -295,8 +282,9 @@ dependencies = [
 [[package]]
 name = "alloy-web"
 version = "0.1.0"
+source = "git+https://github.com/DrHongos/alloy-web#ff9c9abe76f574e9815a59727486cb050c739ed8"
 dependencies = [
- "alloy-primitives 0.5.2",
+ "alloy-primitives",
  "alloy-rpc-types",
  "hex",
  "js-sys",
@@ -1743,7 +1731,7 @@ checksum = "47331ff0955a60df66db753f5dcfe3ca0275abe192e58c9eb6d0d8c1a131e604"
 dependencies = [
  "alloy-chains",
  "alloy-json-abi",
- "alloy-primitives 0.5.2",
+ "alloy-primitives",
  "reqwest",
  "semver 1.0.20",
  "serde",
@@ -2650,6 +2638,15 @@ name = "itertools"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
+dependencies = [
+ "either",
+]
+
+[[package]]
+name = "itertools"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25db6b064527c5d482d0423354fcd07a89a2dfe07b67892e62411946db7f07b0"
 dependencies = [
  "either",
 ]
@@ -4723,7 +4720,7 @@ dependencies = [
  "alloy-chains",
  "alloy-dyn-abi",
  "alloy-json-rpc",
- "alloy-primitives 0.5.2",
+ "alloy-primitives",
  "alloy-providers",
  "alloy-rpc-types",
  "alloy-sol-macro",
