@@ -282,7 +282,6 @@ dependencies = [
 [[package]]
 name = "alloy-web"
 version = "0.1.0"
-source = "git+https://github.com/DrHongos/alloy-web#ff9c9abe76f574e9815a59727486cb050c739ed8"
 dependencies = [
  "alloy-primitives",
  "alloy-rpc-types",
@@ -4726,9 +4725,9 @@ dependencies = [
  "alloy-sol-macro",
  "alloy-sol-types",
  "alloy-web",
+ "ethers",
  "foundry-block-explorers",
  "gloo-timers 0.3.0",
- "hex",
  "js-sys",
  "ruint",
  "serde",

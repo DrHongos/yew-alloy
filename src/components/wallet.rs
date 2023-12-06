@@ -38,7 +38,7 @@ pub fn wallet() -> Html {
     };
     html! {
         <div>
-            <button onclick={onclick_ethereum}>{label}</button><br />
+            <button class={"button"} onclick={onclick_ethereum}>{label}</button><br />
             if !connected {
                 <input type="checkbox" {onclick} disabled={!eth.walletconnect_available()}/ ><label>{"Wallet connect"}</label>
             }
