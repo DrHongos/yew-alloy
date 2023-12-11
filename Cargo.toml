@@ -25,11 +25,12 @@ yew = { version="0.20", features=["csr"] }
 alloy-providers = { git="https://github.com/alloy-rs/alloy" }
 alloy-json-rpc = { git="https://github.com/alloy-rs/alloy" }
 alloy-rpc-types = { git="https://github.com/alloy-rs/alloy" }
-alloy-web = { git="https://github.com/DrHongos/alloy-web" }
-#path = "../../alloy-web" 
+alloy-web = { path = "../../alloy-web" }
+#git="https://github.com/DrHongos/alloy-web"
 alloy-primitives = "0.5.2"
 serde_json = "1.0.108"
 alloy-dyn-abi = { version = "0.5.2", features = ["eip712"] }
 alloy-sol-types = { version = "0.5.2", features = ["eip712-serde"] }
 alloy-sol-macro = "0.5.2"
-ethers = "2.0.11"
+k256 = "0.13.2"
+elliptic-curve = "0.13.8"

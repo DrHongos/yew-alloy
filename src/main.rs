@@ -2,6 +2,7 @@ mod app;
 mod components;
 mod helpers;
 mod contexts;
+mod signature;
 
 use app::App;
 
