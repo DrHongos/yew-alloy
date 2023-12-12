@@ -6,7 +6,7 @@ use serde::Serialize;
 use serde_json::json;
 use yew::{platform::spawn_local, prelude::*};
 use std::str::FromStr;
-use crate::signature::Signature;
+use alloy_signer::Signature;
 
 fn typed_data_for_document(name: String, chain_id_v: u64) -> TypedData {
     sol! {
