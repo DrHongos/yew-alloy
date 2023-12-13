@@ -48,20 +48,28 @@ pub fn signature_button() -> Html {
                 let data = typed_data_for_document("Rust Dapp".to_string(), chain_id, "Some content to sign".to_string());
                 //log(format!("data: {:#?}",data).as_str());                
                 let ethereum = ethereum.clone();
+                
                 spawn_local(async move {
+                    
+                    // handle signature rejected
                     let signature_res = ethereum
                         .sign_typed_data(json!(data).to_string(), &ethereum.account())
-                        .await
-                        .expect("Could not sign message");
-                    let signature = Signature::from_str(&signature_res).expect("Could not parse Signature");        
+                        .await;
 
-                    let msg_signing_hash = data.eip712_signing_hash().expect("No signing hash");
-                    let rec = signature
-                        .recover_address_from_prehash(
-                            &msg_signing_hash
-                        ).expect("Could not recover address from msg");
-                    log(format!("Signing with {:?} recovered {:?}", ethereum.account(), rec).as_str());
+                    if let Ok(signed) = signature_res {
+                        let signature = Signature::from_str(&signed).expect("Could not parse Signature");        
+    
+                        let msg_signing_hash = data.eip712_signing_hash().expect("No signing hash");
+                        let rec = signature
+                            .recover_address_from_prehash(
+                                &msg_signing_hash
+                            ).expect("Could not recover address from msg");
+                        log(format!("Signing {:#?} with {:?} recovered {:?}", &data, ethereum.account(), rec).as_str());
+                    } else {
+                        log("Signature rejected");
+                    }
                 });
+
             } else {
                 log("Are we disconnected?");
             }
