@@ -22,16 +22,19 @@ wasm-bindgen = {version = "0.2.88", features = ["serde-serialize"]}
 wasm-bindgen-futures = "0.4.38"
 web-sys = {version="0.3.65", features = ["Window", "Event", "EventTarget"]}
 yew = { version="0.20", features=["csr"] }
+serde_json = "1.0.108"
+
+alloy-web = { git="https://github.com/DrHongos/alloy-web" }
+#path = "../../alloy-web"
+
+# alloy crates
 alloy-providers = { git = "https://github.com/alloy-rs/alloy" }
 alloy-json-rpc = { git = "https://github.com/alloy-rs/alloy" }
 alloy-rpc-types = { git = "https://github.com/alloy-rs/alloy" }
-alloy-signer = { git = "https://github.com/alloy-rs/alloy" }
-alloy-web = { git="https://github.com/DrHongos/alloy-web" }
-#path = "../../alloy-web" 
-alloy-primitives = "0.5.2"
-serde_json = "1.0.108"
+alloy-signer = { git = "https://github.com/alloy-rs/alloy", features = ["eip712"]}
+
+# core crates
 alloy-dyn-abi = { version = "0.5.2", features = ["eip712"] }
 alloy-sol-types = { version = "0.5.2", features = ["eip712-serde"] }
-alloy-sol-macro = "0.5.2"
-k256 = "0.13.2"
-elliptic-curve = "0.13.8"
+alloy-sol-macro = { version = "0.5.2" }
+alloy-primitives = { version = "0.5.2" }

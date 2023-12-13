@@ -1,6 +1,5 @@
 use std::sync::Arc;
 use alloy_primitives::Address;
-use alloy_rpc_types::Signature;
 use alloy_chains::Chain;
 use alloy_web::{Ethereum, EthereumBuilder, EthereumError, Event, WalletType};
 use serde::Serialize;
