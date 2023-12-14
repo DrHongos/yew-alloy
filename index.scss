@@ -42,6 +42,16 @@ main {
   background-color: greenyellow;
   color: black;
   font-weight: 750;
+  transition: all 0.25s;
+  cursor: pointer;
+}
+.button:disabled {
+  background-color: lightgray;
+  border: 1px solid gray;  
+}
+.button:hover {
+  font-weight: 800;
+  background-color: gold;
 }
 
 .burn:after {
@@ -81,4 +91,17 @@ h1 + .subtitle {
       stroke-width: 1;
       shape-rendering: crispEdges;
   }
+}
+
+.signer {
+  display: block;
+  justify-content: space-between;
+  
+  
+}
+.name_input {
+  max-width: 200px;
+}
+.msg_input {
+  width: 80%;
 }
