@@ -9,6 +9,8 @@ use std::str::FromStr;
 use alloy_signer::Signature;
 use alloy_sol_types::Eip712Domain;
 use web_sys::HtmlInputElement;
+use std::borrow::Cow;
+use alloy_rpc_client::RpcCall;
 
 fn typed_data_for_document(name: &str, chain_id_v: u64, content: &str) -> TypedData {
 
@@ -30,10 +32,7 @@ fn typed_data_for_document(name: &str, chain_id_v: u64, content: &str) -> TypedD
         chain_id: chain_id_v,
     );
 
-    let mut t = TypedData::from_struct(&doc, Some(domain_obj));
-    // populates resolver with domain types
-    let _ = t.resolver.ingest_string(t.domain().encode_type());
-    t
+    TypedData::from_struct(&doc, Some(domain_obj))
 }
 
 #[function_component(SignatureButton)]
@@ -44,42 +43,40 @@ pub fn signature_button() -> Html {
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
     );
-    let chain_id = ethereum.chain_id();
+    let chain_id: u64 = ethereum.chain().unwrap_or_default().id();
 
     let onclick = {
         let ethereum = ethereum.clone();
         let message = (*msg).clone();
         let name = (*name).clone();
         Callback::from(move |_: MouseEvent| {
-            if ethereum.is_connected() {
-                let data = typed_data_for_document(&name, chain_id, &message);
-                //log(format!("data: {:#?}",data).as_str());
-                let ethereum = ethereum.clone();
-                
-                spawn_local(async move {
-                    
-                    // handle signature rejected
-                    let signature_res = ethereum
-                        .sign_typed_data(json!(data).to_string(), &ethereum.account())
-                        .await;
+            let provider = ethereum.provider.as_ref().clone().expect("Disconnected");
+            let account = ethereum.main_account();
+            let data = typed_data_for_document(&name, chain_id, &message);
+            //log(format!("data: {:#?}",data).as_str());
+            let ethereum = ethereum.clone();
+            let client = provider.clone();
+            spawn_local(async move {
+                let tdata = json!(data).to_string();
+                let params1: Cow<'static, String> = Cow::Owned(account);
+                let params2: Cow<'static, String> = Cow::Owned(tdata);
 
-                    if let Ok(signed) = signature_res {
-                        let signature = Signature::from_str(&signed).expect("Could not parse Signature");        
-    
-                        let msg_signing_hash = data.eip712_signing_hash().expect("No signing hash");
-                        let rec = signature
-                            .recover_address_from_prehash(
-                                &msg_signing_hash
-                            ).expect("Could not recover address from msg");
-                        log(format!("Signing {:#?} with {:?} recovered {:?}", &data, ethereum.account(), rec).as_str());
-                    } else {
-                        log("Signature rejected");
-                    }
-                });
+                let req: RpcCall<_, Vec<Cow<'static, String>>, String> = client.inner().prepare("eth_signTypedData_v4", vec![params1, params2]);
 
-            } else {
-                log("Are we disconnected?");
-            }
+                if let Ok(signed) = req.await {
+                    let signature = Signature::from_str(&signed).expect("Could not parse Signature");        
+
+                    let msg_signing_hash = data.eip712_signing_hash().expect("No signing hash");
+                    let rec = signature
+                        .recover_address_from_prehash(
+                            &msg_signing_hash
+                        ).expect("Could not recover address from msg");
+                    log(format!("Signature is: {}", &signed).as_str());
+                    log(format!("{:#?} signed with {:?} recovered {:?}", &data, ethereum.account(), rec).as_str());
+                } else {
+                    log("Signature rejected");
+                }
+            });
         })
     };
 
@@ -90,6 +87,7 @@ pub fn signature_button() -> Html {
             message.set(input.value());
         })
     };
+
     let on_change_name = {
         let naming = name.clone();
         Callback::from(move |e: Event| {
@@ -100,14 +98,9 @@ pub fn signature_button() -> Html {
 
     html! {
         <div class={"signer"}>
-        
-        <label>{"Name"}</label>
-        <input onchange={on_change_name} class={"name_input"} disabled={!ethereum.is_connected()} type="text" value={(*name).clone()} />
-        <br />
-        <label>{"Content"}</label>
-        <input onchange={on_change_message} class={"msg_input"} disabled={!ethereum.is_connected()} type="text" value={(*msg).clone()} />
-        <hr />
-        <button {onclick} class={"button"} disabled={!ethereum.is_connected()}>{"Sign it"}</button>
+            <input onchange={on_change_name} class={"name_input"} disabled={!ethereum.is_connected()} type="text" value={(*name).clone()} />
+            <textarea onchange={on_change_message} class={"msg_input"} disabled={!ethereum.is_connected()} type="text" value={(*msg).clone()} />
+            <button {onclick} class={"button-sign"} disabled={!ethereum.is_connected()}>{"Sign typed data"}</button>
         </div>
     }
 }
