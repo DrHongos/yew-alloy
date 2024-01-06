@@ -1,7 +1,9 @@
 use yew::prelude::*;
 use crate::contexts::ethereum::UseEthereum;
-use web_sys::HtmlInputElement;
-use alloy_rpc_types::{Filter, Log};
+use alloy_rpc_types::{
+    Filter, 
+    //Log,
+};
 use wasm_bindgen_futures::spawn_local;
 use crate::helpers::log;
 use std::ops::Deref;
@@ -22,7 +24,7 @@ pub fn get_logs() -> Html {
     );
     let client = ethereum.provider.clone();
     let filter = use_state(|| Filter::new());
-    let logs = use_state(|| Vec::<Log>::new());
+//    let logs = use_state(|| Vec::<Log>::new());
     
     let on_filter: Callback<Filter> = {
         let f = filter.clone();

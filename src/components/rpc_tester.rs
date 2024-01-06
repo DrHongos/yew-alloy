@@ -7,10 +7,11 @@ use crate::helpers::log;
 use crate::contexts::ethereum::UseEthereum;
 use crate::components::{
     get_code::GetCode,
-    button_sign::SignatureButton,
+    sign_typed_data::SignTypedData,
     switch_chain::SwitchChain,
-    last_block_getter::LastBlockGetter,
+    get_block_by_number::GetBlockByNumber,
     get_logs::GetLogs,
+    get_balance::GetBalance,
 };
 
 #[function_component(RpcTest)]
@@ -87,22 +88,6 @@ pub fn rpc_tester() -> Html {
             } else { log("disconnected") }
         })};
 
-
-    let my_balance = {
-        let client = provider.clone();
-        Callback::from(move |_: MouseEvent| {
-            if let Some(client) = client.deref() {
-                let account: Address = main_account.into();
-                let client = client.clone();
-                    spawn_local(async move {    
-                        match client.get_balance(account, None).await {
-                            Ok(b) => log(format!("Balance of {}: {}", account, b).as_str()),
-                            Err(rv) => log(format!("Error: {:#?}", rv).as_str())
-                        }
-                    })
-                } else { log("disconnected") }
-    })};
-
     let get_tx_count = {
         let client = provider.clone();
         Callback::from(move |_: MouseEvent| {
@@ -161,11 +146,15 @@ pub fn rpc_tester() -> Html {
                 <button onclick={get_tx_count} class="button">{"TxCount"}</button>
                 <button onclick={get_gas_price} class="button">{"GasPrice"}</button>
                 <button onclick={syncing} class="button">{"Syncing"}</button>
-                <button onclick={my_balance} class="button">{"balanceOf(me)"}</button>
-                <GetCode />
-                <SignatureButton />
-                <SwitchChain />
-                <LastBlockGetter />
+                <div class="shorts">
+                    <GetBalance />
+                    <GetCode />
+                    <SwitchChain />
+                </div>
+                <div class="shorts">
+                    <GetBlockByNumber />
+                    <SignTypedData />
+                </div>
                 <GetLogs />
             }
         </div>

@@ -35,8 +35,8 @@ fn typed_data_for_document(name: &str, chain_id_v: u64, content: &str) -> TypedD
     TypedData::from_struct(&doc, Some(domain_obj))
 }
 
-#[function_component(SignatureButton)]
-pub fn signature_button() -> Html {
+#[function_component(SignTypedData)]
+pub fn sign_typed_data() -> Html {
     let msg = use_state(|| "Some content to sign".to_string());
     let name = use_state(|| "Your name".to_string());
 

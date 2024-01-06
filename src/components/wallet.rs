@@ -13,8 +13,9 @@ pub fn wallet() -> Html {
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
     );
+
     //let wc = use_state(|| false);
-    
+
     let connected = ethereum.is_connected();
     let label = if connected {
         ethereum.main_account()
@@ -23,7 +24,7 @@ pub fn wallet() -> Html {
     };
     let chain_label = ethereum.chain();
     //let balance = ethereum.balance();
-    /* 
+/*     
     use_effect(move || {               // should have dependencies
         let nc = nc_name.clone();
         if let Some(chainp) = chain_label {
@@ -59,10 +60,11 @@ pub fn wallet() -> Html {
             <button class={"button"} onclick={onclick_ethereum}>{label}</button>
             /* if !connected {
                 <input type="checkbox" {onclick} disabled={!eth.walletconnect_available()}/ ><label>{"Wallet connect"}</label>
-            } */
-            
+            } */        
             if let Some(cl) = chain_label {
-                <h3>{format!("{}", cl.named().expect("Chain with no name?"))}</h3>
+                <div class="chain-display">
+                    <div>{format!("{}", cl.named().expect("Chain with no name?"))}</div>
+                </div>
             } 
             /* if let Some(bal) = balance {
                 <h3>{bal}</h3>

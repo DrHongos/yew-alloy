@@ -1,50 +1,36 @@
 use yew::prelude::*;
-use alloy_primitives::{Address, U64, FixedBytes, B256};
+use alloy_primitives::{Address, FixedBytes, B256};
 use alloy_rpc_types::{BlockNumberOrTag, Filter};
-use std::{
-    ops::Deref, 
-    str::FromStr, 
-    sync::Arc, 
-};
-use wasm_bindgen_futures::spawn_local;
+use std::str::FromStr;
 use crate::helpers::log;
 use crate::contexts::ethereum::UseEthereum;
 use web_sys::HtmlInputElement;
 use crate::components::block_selector::BlockSelector;
 /* 
 TODO:
-    - do complex filters to get logs
-        - add events 
-            - into a Vec<String> to later do events() on a new filter?
-
-            - handle error cases
+    - finish the filter creation (range vs one)
+    - add topics
+    - handle error cases
 
 */
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
-    pub on_filter: Callback<Filter>,     // maybe a tuple that returns the indication (from/to)
+    pub on_filter: Callback<Filter>,
 }
 
 #[function_component(FilterCreator)]
 pub fn filter_creator(props: &Props) -> Html {
-//    let filter = use_state(|| Filter::new());
-//    let mut filter = RefCell::new(Filter::new());
-// points
-    let address = use_state(|| String::new());
+    let address = use_state(|| String::new());      // not really needed
     let addresses = use_state(|| Vec::<Address>::new());
-// range
+    
     let range_type = use_state(|| "one".to_string());
     let block_hash = use_state(|| B256::from(FixedBytes::ZERO));
     let from_block = use_state(|| BlockNumberOrTag::Latest);
     let to_block = use_state(|| BlockNumberOrTag::Latest);
 
-// subjects
-    // events are given by: event_name, [u8], U256 (topic)
-//    let event_input_mode = use_state(|| "topic".to_string());
     let events = use_state(|| Vec::new());
     
-    // let indexed_topics (the 3 of them) 
     let topic_1 = use_state(|| String::new());  // topics are B256 
     let topic_2 = use_state(|| String::new());// topics are B256 
     let topic_3 = use_state(|| String::new());// topics are B256 
@@ -52,7 +38,6 @@ pub fn filter_creator(props: &Props) -> Html {
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
     );
-    let client = ethereum.provider.clone();
          
     let on_change_address = {
         let a = address.clone();

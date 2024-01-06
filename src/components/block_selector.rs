@@ -1,12 +1,12 @@
 use yew::prelude::*;
-use alloy_rpc_types::{BlockNumberOrTag, Filter};
+use alloy_rpc_types::BlockNumberOrTag;
 use web_sys::HtmlInputElement;
 use alloy_primitives::U64;
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
     pub from: bool,
-    pub on_block_entry: Callback<(bool, BlockNumberOrTag)>,     // maybe a tuple that returns the indication (from/to)
+    pub on_block_entry: Callback<(bool, BlockNumberOrTag)>,
 }
 
 #[function_component(BlockSelector)]
