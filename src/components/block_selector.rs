@@ -14,8 +14,12 @@ pub fn block_selector(props: &Props) -> Html {
     let block_number = use_state(|| U64::ZERO);             // set something different of 0
     let ops = use_state(|| BlockNumberOrTag::Latest);
     let dops = (*ops).clone();
+
     let onset_ops = {
         let c = ops.clone();
+        let block_number = (*block_number).clone();
+        let pprops = props.on_block_entry.clone();    
+        let from = props.from.clone();
         Callback::from(move |e: Event| {
             let input: HtmlInputElement = e.target_unchecked_into();
             let ns = match input.value().as_str() {
@@ -27,28 +31,32 @@ pub fn block_selector(props: &Props) -> Html {
                 &_ => BlockNumberOrTag::Latest,
             };
             c.set(ns);
+
+            let res = if ns.is_number() {
+                BlockNumberOrTag::Number(block_number)
+            } else {
+                ns
+            };
+            pprops.emit((from, res))
         })
     };
     
     let set_block_number = {
         let c = block_number.clone();
+        let pprops = props.on_block_entry.clone();    
+        let from = props.from.clone();
         Callback::from(move |e: Event| {
             let input: HtmlInputElement = e.target_unchecked_into();
             let ns = input.value().parse::<u64>().expect("Invalid value");
-            c.set(U64::from(ns));
-        })
-    };
-    
-    let ret = {
-        let pprops = props.on_block_entry.clone();    
-        let from = props.from.clone();
-        Callback::from(move |_| {
+            let p = U64::from(ns);
+            
             let res = if dops.is_number() {
-                BlockNumberOrTag::Number(*block_number)
+                BlockNumberOrTag::Number(p)
             } else {
                 *ops
             };
-            pprops.emit((from, res))
+            pprops.emit((from, res));
+            c.set(p);
         })
     };
 
@@ -65,7 +73,6 @@ pub fn block_selector(props: &Props) -> Html {
             if dops.is_number() {
                 <input onchange={set_block_number} class={"block_number_input"} type="number" />
             }
-            <button onclick={ret}>{"Set"}</button>            
         </div>
     )
 }

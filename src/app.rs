@@ -2,11 +2,8 @@ use yew::prelude::*;
 use crate::contexts::provider::EthereumContextProvider;
 use crate::contexts::ethereum::UseEthereum;
 use crate::components::{
-//    gas_track::GasTrack,
     wallet::Wallet,
-//    button_sign::SignatureButton,
-    rpc_tester::RpcTest,
-//    printer_test::PrinterTest,
+    provider_tester::ProviderTest,
 };
 /* 
 TODO: 
@@ -47,7 +44,7 @@ pub fn tools() -> Html {
     );
     let tools = match ethereum.is_connected() {
         true => html!{
-            <RpcTest />
+            <ProviderTest />
         },
         false => html!{<p>{"Connect to window.ethereum to see tools"}</p>},
     };

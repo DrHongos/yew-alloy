@@ -69,8 +69,10 @@ pub fn get_block_by_number() -> Html {
                     from={true}
                     on_block_entry={on_block_entry.clone()}
                 />
-                <label for="complete">{"complete data"}</label>
-                <input type="checkbox" id={"complete"} onchange={on_full_data_checkbox} checked={*complete} />
+                <div>
+                    <label for="complete">{"complete"}</label>
+                    <input type="checkbox" id={"complete"} onchange={on_full_data_checkbox} checked={*complete} />
+                </div>
                 <button 
                     onclick={get_block} 
                     class="button"

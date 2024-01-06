@@ -14,8 +14,8 @@ use crate::components::{
     get_balance::GetBalance,
 };
 
-#[function_component(RpcTest)]
-pub fn rpc_tester() -> Html {
+#[function_component(ProviderTest)]
+pub fn provider_tester() -> Html {
     
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
@@ -136,9 +136,8 @@ pub fn rpc_tester() -> Html {
 
     html!{
         <div class={"rpc_tester"}>
-            <h3>{"RpcClient box"}</h3>
             if ethereum.is_connected() {
-                <button onclick={logger} class="button">{"log"}</button>
+                <button onclick={logger} class="button">{"log provider"}</button>
                 <button onclick={block_number} class="button">{"blockNumber"}</button>
                 <button onclick={request_accounts} class="button">{"requestAccounts"}</button>
                 <button onclick={client_version} class="button">{"clientVersion"}</button>

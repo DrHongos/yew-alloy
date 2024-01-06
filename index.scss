@@ -245,3 +245,13 @@ h1 + .subtitle {
 .shorts {
   display: flex;
 }
+.address_input {
+  display: flex;
+}
+.address_input small {
+  font-weight: bold;
+  color: red;
+}
+.address_input button {
+  max-width: 15%;
+}

@@ -5,10 +5,15 @@ use std::str::FromStr;
 use crate::helpers::log;
 use crate::contexts::ethereum::UseEthereum;
 use web_sys::HtmlInputElement;
-use crate::components::block_selector::BlockSelector;
+use crate::components::{
+    block_selector::BlockSelector,
+    address_input::AddressInput,
+};
 /* 
 TODO:
-    - finish the filter creation (range vs one)
+    - replace address inputs for the component (in here and others)
+
+    - finish the filter creation (range vs blockhash)
     - add topics
     - handle error cases
 
@@ -21,7 +26,6 @@ pub struct Props {
 
 #[function_component(FilterCreator)]
 pub fn filter_creator(props: &Props) -> Html {
-    let address = use_state(|| String::new());      // not really needed
     let addresses = use_state(|| Vec::<Address>::new());
     
     let range_type = use_state(|| "one".to_string());
@@ -38,31 +42,7 @@ pub fn filter_creator(props: &Props) -> Html {
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
     );
-         
-    let on_change_address = {
-        let a = address.clone();
-        Callback::from(move |e: Event| {
-            let input: HtmlInputElement = e.target_unchecked_into();
-            a.set(input.value());
-        })
-    };
 
-    let on_add_address = {
-        let a = address.clone();
-        let b = addresses.clone();
-        Callback::from(move |_e: MouseEvent| {
-            let ap = a.parse::<Address>().expect("Wrong address");
-            // check ap is not in addresses
-            log(format!("Good address {:?}", ap).as_str());
-            if b.contains(&ap) {
-                log("Loaded already");
-            } else {
-                let mut c = (*b).clone();
-                let _ = c.push(ap);
-                b.set(c);
-            }
-        })
-    };
     let set_range_type = {
         let r = range_type.clone();
         Callback::from(move |e: Event| {
@@ -96,7 +76,20 @@ pub fn filter_creator(props: &Props) -> Html {
             }
         })
     };
-    
+
+    let on_add_address: Callback<Address> = {
+        let a = addresses.clone();
+        Callback::from(move |addr| {
+            if a.contains(&addr) {
+                log("Loaded already");
+            } else {
+                let mut c = (*a).clone();
+                let _ = c.push(addr);
+                a.set(c);
+            }
+        })
+    };
+
     let set_topic_1 = {
         let t = topic_1.clone();
         Callback::from(move |e: Event| {
@@ -162,7 +155,7 @@ pub fn filter_creator(props: &Props) -> Html {
             // if indexed topics add them
             
             // then call parent with result
-            log(format!("{:#?}", filter).as_str());   // cannot see this! SHHIIIIIIT
+            log(format!("{:#?}", filter).as_str());
             propse.emit(filter.clone());
         })
     };
@@ -213,16 +206,16 @@ pub fn filter_creator(props: &Props) -> Html {
 
     html!{
         <div class={"filter"}>
-            <p>{"Filter creator"}</p>
-            <hr />
             if ethereum.is_connected() {
-                <p>{"Add addresses"}</p>
-                <input onchange={on_change_address} class={"address_input"} type="text" />
-                <button onclick={on_add_address} class={"button"}>{"Add"}</button>
+                <small>{"Add addresses"}</small>
+                <AddressInput 
+                    on_add={on_add_address}
+                    show_me={true}
+                />
                 // list addresses to listen to (and remove button)
                 {addresses_list}
                 <hr />
-                <p>{"Define block/range"}</p>
+                <small>{"Define "}</small>
                 // get blocks checked
                 
                 <select onchange={set_range_type}>
@@ -246,30 +239,27 @@ pub fn filter_creator(props: &Props) -> Html {
                             from={true}
                             on_block_entry={on_block_entry.clone()}
                         />
-                        <p>{format!("From block: {}",*from_block)}</p>
                         <label>{"to"}</label>
                         <BlockSelector 
                             from={false}
                             on_block_entry={on_block_entry}
                         />
-                        <p>{format!("To block: {}",*to_block)}</p>
                     </div>
                 }
                 
                 <hr />
-                <p>{"Events and topics"}</p>
+                <small>{"Events"}</small>
                 // get events listened
-                <p>{"Events can be given via its signature"}</p>
-                <input onchange={add_event} placeholder={"event"} class={"address_input"} type="text" /> 
+                <input onchange={add_event} placeholder={"event signature"} class={"address_input"} type="text" /> 
                 {events_list}
                 <hr />
                 // topics
-                <p>{"Indexed topics"}</p>
+                <small>{"Indexed topics"}</small>
                 <input onchange={set_topic_1} placeholder={"topic 1"} class={"address_input"} type="text" /> 
                 <input onchange={set_topic_2} placeholder={"topic 2"} class={"address_input"} type="text" />
                 <input onchange={set_topic_3} placeholder={"topic 3"} class={"address_input"} type="text" />
                 <hr />
-                <button onclick={create_filter}>{"Create filter"}</button>
+                <button onclick={create_filter} class={"button"}>{"Create filter"}</button>
             }
         </div>
     }

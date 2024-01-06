@@ -8,17 +8,18 @@ use wasm_bindgen_futures::spawn_local;
 use crate::helpers::log;
 use std::ops::Deref;
 use crate::components::filter::FilterCreator;
-
+use std::ops::BitXorAssign;
 /* 
 TODO:
     - finish filter  
     - handle error cases
-    - display info
+    - display/download data
 
 */
 
 #[function_component(GetLogs)]
 pub fn get_logs() -> Html {
+    let open = use_state(|| false);
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
     );
@@ -43,14 +44,31 @@ pub fn get_logs() -> Html {
             })
         })
     };
-
+    let toggle_comp = {
+        let o = open.clone();
+        let rv = (*o).clone();
+        Callback::from(move |_e: MouseEvent| {
+            let mut rvv = rv.clone();
+            let _ = rvv.bitxor_assign(true);
+            o.set(rvv);
+        })
+    };
+    let button_label = match (*open).clone() {
+        true => "Cancel",
+        false => "Get logs",
+    };
     html!{
         <div class={"getCode"}>
             if ethereum.is_connected() {
-                <FilterCreator 
-                    on_filter={on_filter}
-                />
-                // collect logs?
+                <button onclick={toggle_comp} class={"button"}>
+                    {button_label}
+                </button>
+                if (*open).clone() {
+                    <FilterCreator 
+                        on_filter={on_filter}
+                    />
+                }
+                // collect/display logs?
             }
         </div>
     }
