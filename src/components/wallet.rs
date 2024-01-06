@@ -2,9 +2,6 @@ use crate::contexts::ethereum::UseEthereum;
 use alloy_web::WalletType;
 use yew::prelude::*;
 use crate::helpers::log;
-// TODO
-// add balance and native currency naming (https://docs.rs/alloy-chains/latest/src/alloy_chains/named.rs.html#568-585)
-// do it in the context, linked to events of change account & chain
 
 #[function_component(Wallet)]
 pub fn wallet() -> Html {

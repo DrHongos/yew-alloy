@@ -49,8 +49,8 @@ impl UseEthereum {
                                 //me.pairing_url.set(Some(url));
                             }
                             Event::Connected => {
-                                log("Event: Connected");
-                                me.connected.set(true);
+                                //log("Event: Connected");
+                                //me.connected.set(true);       // this does not detect rejected auth
                                 //me.pairing_url.set(None)
                             }
                             Event::Disconnected => {
@@ -77,7 +77,8 @@ impl UseEthereum {
                                     me.chain.set(None);
                                     me.accounts.set(None);
                                 } else {
-                                    me.accounts.set(accounts)
+                                    //me.connected.set(true);
+                                    me.accounts.set(accounts);
                                 }
                             },
                         })),
@@ -85,13 +86,18 @@ impl UseEthereum {
                     .await
                     .is_ok()
                 {
-                    let provider = Provider::new(btrans).await;
-                    log(format!("Setting provider {:#?}", provider).as_str());
-                    let acc = provider.from.clone();
-                    let c = provider.chain.clone();
-                    this.accounts.set(Some(acc));
-                    this.chain.set(Some(c));
-                    this.provider.set(Some(provider));
+                    match Provider::new(btrans).await {
+                        Some(provider) => {
+                            log(format!("Setting provider {:#?}", provider).as_str());
+                            let acc = provider.from.clone();
+                            let c = provider.chain.clone();
+                            this.accounts.set(Some(acc));
+                            this.chain.set(Some(c));
+                            this.connected.set(true);
+                            this.provider.set(Some(provider));
+                        },
+                        None => {log("Rejected connection")}
+                    }
                 }
             });
         } else {
