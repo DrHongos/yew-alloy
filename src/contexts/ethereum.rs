@@ -49,12 +49,20 @@ impl UseEthereum {
                                 //me.pairing_url.set(Some(url));
                             }
                             Event::Connected => {
-                                //log("Event: Connected");
+                                log("Event: Connected");
                                 me.connected.set(true);
                                 //me.pairing_url.set(None)
                             }
-                            Event::Disconnected => me.connected.set(false),
+                            Event::Disconnected => {
+                                me.connected.set(false);
+                                me.accounts.set(None);
+                                me.chain.set(None);
+                                me.provider.set(None);
+                                log("Disconnecting");
+                                
+                            },
                             Event::ChainIdChanged(chain_id) => {
+                                //log(format!("chainidchanged {:#?}", chain_id).as_str());
                                 me.chain.set(Some(Chain::from_id(chain_id.expect("No chain id"))));
                                 if let Some(c) = chain_id {
                                     me.chain.set(Some(Chain::from_id(c)))
@@ -62,7 +70,15 @@ impl UseEthereum {
                             },
                             Event::AccountsChanged(accounts) => {
                                 //log(format!("Event: Account changed {:#?}", accounts).as_str());
-                                me.accounts.set(accounts)
+                                // if accounts are removed from extension, does not emit "Disconnected"
+                                if accounts.clone().expect("Error on extension addresses").len() == 0 {
+                                    me.provider.set(None);
+                                    me.connected.set(false);
+                                    me.chain.set(None);
+                                    me.accounts.set(None);
+                                } else {
+                                    me.accounts.set(accounts)
+                                }
                             },
                         })),
                     )
@@ -84,10 +100,6 @@ impl UseEthereum {
     }
 
     pub fn disconnect(&mut self) {
-        //let mut eth = (*self.ethereum).clone();
-        //eth.disconnect();
-        //self.ethereum.set(eth);
-//        self.client.set(None);
         self.provider.set(None);
         self.connected.set(false);
         self.chain.set(None);
@@ -135,7 +147,7 @@ impl UseEthereum {
 
 #[hook]
 pub fn use_ethereum() -> UseEthereum {  // check SuspensionResult protocol
-    /* 
+        /* 
     to implement wallet-connect (from ethers-web)
     let mut builder = BrowserTransportBuilder::new();
     if let Some(project_id) = std::option_env!("PROJECT_ID") {

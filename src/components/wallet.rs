@@ -66,9 +66,6 @@ pub fn wallet() -> Html {
                     <div>{format!("{}", cl.named().expect("Chain with no name?"))}</div>
                 </div>
             } 
-            /* if let Some(bal) = balance {
-                <h3>{bal}</h3>
-            } */
         </div>
     }
 }

@@ -5,10 +5,8 @@ body {
 }
 
 body {
-  align-items: center;
   display: flex;
   justify-content: center;
-
   background: linear-gradient(to bottom right, #444444, #009a5b);
   font-size: 1.5rem;
 }
@@ -18,6 +16,7 @@ main {
   font-family: sans-serif;
   text-align: center;
   width: 100%;
+  top: 0;
 }
 //https://www.w3schools.com/howto/howto_js_sticky_header.asp
 .header {
@@ -156,7 +155,7 @@ h1 + .subtitle {
 
 .rpc_tester {
   padding: 40px;
-  padding-top: 345px;
+//  padding-top: 345px;
   border: 1px solid gray;
   border-radius: 10px;  
 }
