@@ -53,6 +53,7 @@ pub fn get_balance() -> Html {
                 <AddressInput 
                     on_add={on_add_address}
                     show_me={true}
+                    placeholder={String::from("Insert address to get balance")}
                 />
 /* 
                 <input onchange={on_change_address} class={"address_input"} type="text" value={(*address).clone()} />

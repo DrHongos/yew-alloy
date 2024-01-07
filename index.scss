@@ -161,11 +161,12 @@ h1 + .subtitle {
 }
 
 .wallet-show {
-  border: 2px solid black;
-  border-radius: 10px;
+//  border: 2px solid black;
+  //border-radius: 10px;
   display: flex;
   align-items: center;
   margin-right: 46px;
+  transition: all 0.5s ;
 }
 
 .wallet-show button {
@@ -173,14 +174,17 @@ h1 + .subtitle {
 }
 
 .chain-display {
+  display: flex;
+  height: 100%;
   align-items: center;
   padding-right: 8px;
   padding-left: 16px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-weight: bold;
   border-radius: 0 10px 10px 0;
   background-color: purple;
   color: aqua;
-  font-size: large;
-  font-weight: bold;
 }
 .chain-display p {
   margin: auto;

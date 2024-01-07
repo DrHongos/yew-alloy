@@ -7,6 +7,7 @@ use crate::contexts::ethereum::UseEthereum;
 pub struct Props {
     pub on_add: Callback<Address>,
     pub show_me: bool,
+    pub placeholder: String,
 }
 
 #[function_component(AddressInput)]
@@ -45,7 +46,13 @@ pub fn address_input(props: &Props) -> Html {
     html! {
         <div>
             <div class="address_input">
-                <input onchange={on_change_address} id={"address_input"} class={"address_input"} type="text" />
+                <input 
+                    onchange={on_change_address} 
+                    id={"address_input"} 
+                    class={"address_input"} 
+                    placeholder={props.placeholder.clone()}
+                    type="text" 
+                />
                 if props.show_me {
                     <button onclick={set_my_address} class={"button"}>{"me"}</button>
                 }

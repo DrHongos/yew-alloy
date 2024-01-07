@@ -211,6 +211,7 @@ pub fn filter_creator(props: &Props) -> Html {
                 <AddressInput 
                     on_add={on_add_address}
                     show_me={true}
+                    placeholder={String::from("Insert address to listen to")}
                 />
                 // list addresses to listen to (and remove button)
                 {addresses_list}

@@ -34,7 +34,7 @@ pub fn wallet() -> Html {
             } */        
             if let Some(cl) = chain_label {
                 <div class="chain-display">
-                    <div>{format!("{}", cl.named().expect("Chain with no name?"))}</div>
+                    {format!("{}", cl.named().expect("Chain with no name?"))}
                 </div>
             } 
         </div>

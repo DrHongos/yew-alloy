@@ -52,6 +52,7 @@ pub fn get_code() -> Html {
                 <AddressInput 
                     on_add={on_add_address}
                     show_me={false}
+                    placeholder={String::from("Insert contract address")}
                 />
                 if (*address).clone().is_some() {
                     <button onclick={get_code_address} class="button">{"Get code"}</button>
