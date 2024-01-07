@@ -12,6 +12,7 @@ use crate::components::{
     get_block_by_number::GetBlockByNumber,
     get_logs::GetLogs,
     get_balance::GetBalance,
+    call::Call,
 };
 
 #[function_component(ProviderTest)]
@@ -165,6 +166,7 @@ pub fn provider_tester() -> Html {
                     <SignTypedData />
                 </div>
                 <GetLogs />
+                <Call />
             }
         </div>
     }
