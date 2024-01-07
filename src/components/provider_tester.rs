@@ -30,6 +30,15 @@ pub fn provider_tester() -> Html {
         })
     };
 
+    /* let set_listeners = {
+        let provider = provider.clone();
+        Callback::from(move |_| {
+            if let Some(mut p) = (*provider).clone() {
+                p.set_listeners();                
+            }
+        })
+    }; */
+
     let block_number = {
         let client = provider.clone();
         Callback::from(move |_: MouseEvent| {
@@ -145,6 +154,7 @@ pub fn provider_tester() -> Html {
                 <button onclick={get_tx_count} class="button">{"TxCount"}</button>
                 <button onclick={get_gas_price} class="button">{"GasPrice"}</button>
                 <button onclick={syncing} class="button">{"Syncing"}</button>
+//                <button onclick={set_listeners}>{"listeners"}</button>
                 <div class="shorts">
                     <GetBalance />
                     <GetCode />

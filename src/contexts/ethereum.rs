@@ -1,25 +1,23 @@
-use std::sync::Arc;
 use alloy_primitives::Address;
 use alloy_chains::Chain;
 use alloy_web::{
     BrowserTransport, 
-    Event, 
     WalletType, 
     provider::Provider,
+    Event
 };
 use yew::{platform::spawn_local, prelude::*};
 use crate::helpers::log;
 use std::sync::Once;
+use std::sync::Arc;
 
 #[derive(Clone, Debug)]
 pub struct UseEthereum {
-//    pub ethereum: UseStateHandle<BrowserTransport>,
     pub provider : UseStateHandle<Option<Provider<BrowserTransport>>>,
     pub connected: UseStateHandle<bool>,
     pub accounts: UseStateHandle<Option<Vec<Address>>>,
     pub chain: UseStateHandle<Option<Chain>>,
     //pub pairing_url: UseStateHandle<Option<String>>,
-    //pub chain_id: UseStateHandle<Option<u64>>,
 }
 
 impl PartialEq for UseEthereum {
@@ -35,71 +33,56 @@ impl UseEthereum {
     pub fn connect(&mut self, wallet_type: WalletType) {
         // We check if it is possible to connect
         let this = self.clone();
-        let mut btrans = BrowserTransport::new(); 
+        let this_too = this.clone();
+        let btrans = BrowserTransport::new(); // not used
         if btrans.is_available(wallet_type) {
             spawn_local(async move {
-                let me = this.clone();
-                if btrans
-                    .connect(
-                        wallet_type,
-                        Some(Arc::new(move |event| match event {
-                            Event::ConnectionWaiting(_url) => {
-                                //debug!("{url}");
-                                //log("Event: Connection waiting");
-                                //me.pairing_url.set(Some(url));
-                            }
-                            Event::Connected => {
-                                //log("Event: Connected");
-                                //me.connected.set(true);       // this does not detect rejected auth
-                                //me.pairing_url.set(None)
-                            }
-                            Event::Disconnected => {
-                                me.connected.set(false);
-                                me.accounts.set(None);
-                                me.chain.set(None);
-                                me.provider.set(None);
-                                log("Disconnecting");
-                                
-                            },
-                            Event::ChainIdChanged(chain_id) => {
-                                //log(format!("chainidchanged {:#?}", chain_id).as_str());
-                                me.chain.set(Some(Chain::from_id(chain_id.expect("No chain id"))));
-                                if let Some(c) = chain_id {
-                                    me.chain.set(Some(Chain::from_id(c)))
-                                }
-                            },
-                            Event::AccountsChanged(accounts) => {
-                                //log(format!("Event: Account changed {:#?}", accounts).as_str());
-                                // if accounts are removed from extension, does not emit "Disconnected"
-                                if accounts.clone().expect("Error on extension addresses").len() == 0 {
-                                    me.provider.set(None);
-                                    me.connected.set(false);
-                                    me.chain.set(None);
-                                    me.accounts.set(None);
-                                } else {
-                                    //me.connected.set(true);
-                                    me.accounts.set(accounts);
-                                }
-                            },
-                        })),
-                    )
-                    .await
-                    .is_ok()
-                {
-                    match Provider::new(btrans).await {
-                        Some(provider) => {
-                            log(format!("Setting provider {:#?}", provider).as_str());
-                            let acc = provider.from.clone();
-                            let c = provider.chain.clone();
-                            this.accounts.set(Some(acc));
-                            this.chain.set(Some(c));
-                            this.connected.set(true);
-                            this.provider.set(Some(provider));
+                match Provider::new(
+                    wallet_type,
+                    Some(Arc::new(move |event| match event {
+                        Event::ConnectionWaiting(_url) => {
+                            log("Event: Connection waiting");
+                        }
+                        Event::Connected => {
+                            log("Event: Connected");
+                        }
+                        Event::Disconnected => {
+                            log("Event: Disconnected");   
                         },
-                        None => {log("Rejected connection")}
-                    }
+                        Event::ChainIdChanged(chain_id) => {
+                            log(format!("Event: chainidchanged {:#?}", chain_id).as_str());
+                            this_too.chain.set(Some(Chain::from_id(chain_id.unwrap())));
+                            },
+                        Event::AccountsChanged(accounts) => {
+                            log(format!("Event: Account changed {:#?}", accounts).as_str());
+                            if let Some(acc) = accounts {
+                                if acc.len() == 0 { 
+                                    this_too.accounts.set(None);
+                                    this_too.chain.set(None);
+                                    this_too.connected.set(false);
+                                    this_too.provider.set(None); 
+                                } else {
+                                    this_too.accounts.set(Some(acc));
+                                }
+                            } 
+                    },
+                })),
+                ).await {
+                    Some(provider) => {
+                        log(format!("Setting provider {:#?}", provider).as_str());
+                        //let acc = provider.from.clone();
+                        let acc = provider.get_accounts().await.unwrap();
+                        let c = provider.get_chain_id().await.unwrap();
+                        let c: u64 = c.try_into().unwrap_or(1);
+                        this.accounts.set(Some(acc));
+                        this.chain.set(Some(Chain::from_id(c)));
+                        this.connected.set(true);
+                        this.provider.set(Some(provider));
+                    },
+                    None => {log("Rejected connection")}
                 }
-            });
+            }
+        );
         } else {
             println!("Error");
         }
@@ -114,29 +97,28 @@ impl UseEthereum {
     pub fn is_connected(&self) -> bool {
         *self.connected
     }
+
     pub fn chain(&self) -> Option<Chain> {
         *self.chain
     }
+
     pub fn account(&self) -> Address {
         *self
             .accounts
             .as_ref()
-            .and_then(|a| a.first())
+            .expect("empty")
+            .first()
             .unwrap_or(&Address::ZERO)
     }
 
     pub fn main_account(&self) -> String {
-        self.accounts
-            .as_ref()
-            .and_then(|a| a.first())
-            .unwrap_or(&Address::ZERO)
-            .to_string()
+        self.account().to_string()
     }
     // function used to resume on refreshes
     pub async fn resume(&mut self) {
         match Provider::<BrowserTransport>::resume().await {
-            Ok(p) => {
-                if let Some(_p) = p {
+            Ok(r) => {
+                if r {
                     // its is connected!
                     self.connect(WalletType::Injected);
                 } else {
