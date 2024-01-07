@@ -8,10 +8,11 @@ use web_sys::HtmlInputElement;
 use crate::components::{
     block_selector::BlockSelector,
     address_input::AddressInput,
+    blockid_input::BlockIdInput,
 };
 /* 
 TODO:
-    - replace address inputs for the component (in here and others)
+    - introduce BlockIdInput and fix one/range selector
 
     - finish the filter creation (range vs blockhash)
     - add topics

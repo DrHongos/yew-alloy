@@ -55,7 +55,7 @@ pub fn blockid_input(props: &Props) -> Html {
         "number" => {
             html!{
                 <BlockSelector
-                    from={false}
+                    from={true}
                     on_block_entry={set_block_number}
                 />
             }

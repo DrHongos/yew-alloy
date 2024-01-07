@@ -6,49 +6,59 @@ use std::ops::Deref;
 use crate::components::{
     block_selector::BlockSelector,
     blockid_input::BlockIdInput,
+    transaction_request_creator::TransactionRequestCreator,
 };
 use std::ops::BitXorAssign;
-use alloy_rpc_types::BlockId;
+use alloy_rpc_types::{BlockId, CallRequest};
 /* 
 TODO:
     - component to create and make call() queries
-
+    - create and test fake transactionrequest
+        ie: DAI totalSupply()
+        to: 0x6B175474E89094C44Da98b954EedeAC495271d0F
+        data: 0x18160ddd        (to get more use: cast calldata "method(args)" args)
 */
 
 #[function_component(Call)]
 pub fn call() -> Html {
     let open = use_state(|| false);
+    let block = use_state(|| None as Option<BlockId>);
+    let tx = use_state(|| None as Option<CallRequest>);
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
     );
     let client = ethereum.provider.clone();
-    let block_selected = use_state(|| None as Option<BlockId>);
 
-    //    let logs = use_state(|| Vec::<Log>::new());
-    /* 
-    let on_filter: Callback<Filter> = {
-        let f = filter.clone();
-        let client = client.clone();
-        Callback::from(move |inp: Filter| {
-            f.set(inp.clone());
-            let client = client.clone();
-            let inp = inp.clone();
-            spawn_local(async move {
-                if let Some(client) = client.deref() {
-                    match client.get_logs(inp).await {
-                        Ok(d) => log(format!("latest logs are {:#?}", d).as_str()),
-                        _ => log("Error!")
-                    }     
-                } else { log("not connected") }
-            })
-        })
-    };
-    */
     let on_block_entry: Callback<BlockId> = {
-        let b = block_selected.clone();
+        let b = block.clone();
         Callback::from(move |inp: BlockId| {
             log(format!("Received blockId {:#?}", inp).as_str());
             b.set(Some(inp));
+        })
+    };
+    let on_tx: Callback<CallRequest> = {
+        let t = tx.clone();
+        Callback::from(move |txr| {
+            log(format!("Received CallRequest {:#?}", txr).as_str());
+            t.set(Some(txr));
+        })
+    };
+    let call = {
+        let tx = (*tx).clone();
+        let b = (*block).clone();
+        let client = client.clone();
+        Callback::from(move |_: MouseEvent| {
+            if let Some(client) = client.deref() {
+                let client = client.clone();
+                let b = b.clone();
+                let tx = tx.clone();
+                spawn_local(async move {
+                    match client.call(tx.expect("No txr"), b).await {
+                        Ok(bn) => log(format!("Call result: {}", bn).as_str()),
+                        Err(rv) => log(format!("Error: {:#?}", rv).as_str())
+                    }
+                })
+            }
         })
     };
 
@@ -72,49 +82,21 @@ pub fn call() -> Html {
                     {button_label}
                 </button>
                 if (*open).clone() {
-                    <p>{"Create component"}</p>
-                    <p>{"TransactionRequest"}</p>
+                    <TransactionRequestCreator 
+                        on_tx={on_tx}
+                    />
                     <BlockIdInput 
                         on_block_entry={on_block_entry}
                     />
+                    if (*tx).is_some() && (*block).is_some() {
+                        <button
+                            onclick={call}
+                            class={"button"}
+                        >{"Call"}</button>
+                    }
                 }
-                // collect/display logs?
             }
         </div>
     }
 
 }
-
-// alloy_rpc_types::request::TransactionRequest
-/* 
-pub struct TransactionRequest {
-    /// from address
-    pub from: Option<Address>,
-    /// to address
-    pub to: Option<Address>,
-    /// legacy, gas Price
-    #[serde(default)]
-    pub gas_price: Option<U128>,
-    /// max base fee per gas sender is willing to pay
-    #[serde(default)]
-    pub max_fee_per_gas: Option<U128>,
-    /// miner tip
-    #[serde(default)]
-    pub max_priority_fee_per_gas: Option<U128>,
-    /// gas
-    pub gas: Option<U256>,
-    /// value of th tx in wei
-    pub value: Option<U256>,
-    /// Any additional data sent
-    #[serde(alias = "input")]
-    pub data: Option<Bytes>,
-    /// Transaction nonce
-    pub nonce: Option<U64>,
-    /// warm storage access pre-payment
-    #[serde(default)]
-    pub access_list: Option<AccessList>,
-    /// EIP-2718 type
-    #[serde(rename = "type")]
-    pub transaction_type: Option<U8>,
-} 
-*/
