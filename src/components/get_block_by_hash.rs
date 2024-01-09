@@ -1,11 +1,11 @@
 use yew::prelude::*;
 use crate::contexts::ethereum::UseEthereum;
-use alloy_rpc_types::{BlockNumberOrTag, Block};
+use alloy_rpc_types::Block;
 use wasm_bindgen_futures::spawn_local;
 use crate::helpers::log;
 use std::ops::{Deref, BitXorAssign};
-use crate::components::block_selector::BlockSelector;
-
+use alloy_primitives::BlockHash;
+use web_sys::HtmlInputElement;
 /* 
 TODO:
     - handle error cases
@@ -15,10 +15,11 @@ pub struct Props {
     pub on_block: Callback<Block>,
 }
 
-#[function_component(GetBlockByNumber)]
-pub fn get_block_by_number(props: &Props) -> Html {
+#[function_component(GetBlockByHash)]
+pub fn get_block_by_hash(props: &Props) -> Html {
     let full = use_state(|| false);
-    let block = use_state(|| None as Option<BlockNumberOrTag>);
+    let hash = use_state(|| None as Option<BlockHash>);
+    let error_msg = use_state(|| None as Option<String>);
     //let block = use_state(|| None::<Block>);
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
@@ -28,22 +29,18 @@ pub fn get_block_by_number(props: &Props) -> Html {
     let get_block = {
         let client = client.clone();
         let pprops = props.on_block.clone();
-        if let Some(block) = (*block).clone() {
+        if let Some(hash) = (*hash).clone() {
             let full = full.clone();
+            let pprops = pprops.clone();
             Callback::from(move |_: MouseEvent| {
-                let pprops = pprops.clone();
                 let client = client.clone();
-                let block = block.clone();
+                let hash = hash.clone();
                 let full = (*full).clone();
+                let pprops = pprops.clone();
                 spawn_local(async move {
                     if let Some(client) = client.deref() {
-                        match client.get_block_by_number(block.clone(), full).await {
-                            Ok(d) => {
-                                log(format!("block {} is {:#?}", block, d).as_str());
-                                if let Some(data) = d {
-                                    pprops.emit(data);
-                                }
-                            },
+                        match client.get_block_by_hash(hash.clone(), full).await {
+                            Ok(d) => pprops.emit(d.expect("No block!")),
                             _ => log("Error!")
                         }     
                     } else { log("not connected") }
@@ -55,14 +52,20 @@ pub fn get_block_by_number(props: &Props) -> Html {
         }
     };
 
-    let on_block_entry: Callback<(bool, BlockNumberOrTag)> = {
-        let b = block.clone();
-        Callback::from(move |inp| {
-            let (_from, nblock) = inp;
-            b.set(Some(nblock));
+    let on_change_hash = {
+        let h = hash.clone();
+        let err = error_msg.clone();
+        Callback::from(move |e: Event| {
+            let input: HtmlInputElement = e.target_unchecked_into();
+            match input.value().parse::<BlockHash>() {
+                Ok(a) => {
+                    err.set(None);
+                    h.set(Some(a));
+                },
+                Err(e) => err.set(Some(e.to_string()))
+            }
         })
     };
-
     let on_full_data_checkbox = {
         let c = full.clone();
         let rv = (*c).clone();
@@ -76,18 +79,25 @@ pub fn get_block_by_number(props: &Props) -> Html {
     html!{
         <div class={"getCode"}>
             if ethereum.is_connected() {
-                <BlockSelector 
-                    from={true}
-                    on_block_entry={on_block_entry.clone()}
+                <input 
+                    onchange={on_change_hash} 
+                    id={"hash_input"} 
+                    class={"address_input"} 
+                    placeholder={"Insert block hash"}
+                    type="text"
                 />
                 <div>
                     <label for="full">{"full"}</label>
                     <input type="checkbox" id={"full"} onchange={on_full_data_checkbox} checked={*full} />
                 </div>
+                if let Some(error) = (*error_msg).clone() {
+                    <hr />
+                    <small>{error}</small>
+                }
                 <button 
                     onclick={get_block} 
                     class="button"
-                    disabled={(*block).is_none()}
+                    disabled={(*hash).is_none()}
                 >{"Get block"}</button>                
             }
         </div>

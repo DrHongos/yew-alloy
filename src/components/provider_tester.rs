@@ -9,7 +9,7 @@ use crate::components::{
     get_code::GetCode,
     sign_typed_data::SignTypedData,
     switch_chain::SwitchChain,
-    get_block_by_number::GetBlockByNumber,
+    get_block::GetBlock,
     get_logs::GetLogs,
     get_balance::GetBalance,
     call::Call,
@@ -162,7 +162,7 @@ pub fn provider_tester() -> Html {
                     <SwitchChain />
                 </div>
                 <div class="shorts">
-                    <GetBlockByNumber />
+                    <GetBlock />
                     <SignTypedData />
                 </div>
                 <GetLogs />

@@ -12,8 +12,7 @@ use std::ops::BitXorAssign;
 use alloy_rpc_types::{BlockId, CallRequest};
 /* 
 TODO:
-    - component to create and make call() queries
-    - create and test fake transactionrequest
+    - fake transactionrequest
         ie: DAI totalSupply()
         to: 0x6B175474E89094C44Da98b954EedeAC495271d0F
         data: 0x18160ddd        (to get more use: cast calldata "method(args)" args)
@@ -32,14 +31,14 @@ pub fn call() -> Html {
     let on_block_entry: Callback<BlockId> = {
         let b = block.clone();
         Callback::from(move |inp: BlockId| {
-            log(format!("Received blockId {:#?}", inp).as_str());
+            //log(format!("Received blockId {:#?}", inp).as_str());
             b.set(Some(inp));
         })
     };
     let on_tx: Callback<CallRequest> = {
         let t = tx.clone();
         Callback::from(move |txr| {
-            log(format!("Received CallRequest {:#?}", txr).as_str());
+            //log(format!("Received CallRequest {:#?}", txr).as_str());
             t.set(Some(txr));
         })
     };
@@ -53,7 +52,10 @@ pub fn call() -> Html {
                 let b = b.clone();
                 let tx = tx.clone();
                 spawn_local(async move {
-                    match client.call(tx.expect("No txr"), b).await {
+                    let tx = tx.expect("No txr");
+                    log(format!("tx is {:#?}", tx).as_str());
+                    let c = client.call(tx, b);
+                    match c.await {
                         Ok(bn) => log(format!("Call result: {}", bn).as_str()),
                         Err(rv) => log(format!("Error: {:#?}", rv).as_str())
                     }

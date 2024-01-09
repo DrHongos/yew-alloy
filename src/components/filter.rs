@@ -8,7 +8,7 @@ use web_sys::HtmlInputElement;
 use crate::components::{
     block_selector::BlockSelector,
     address_input::AddressInput,
-    blockid_input::BlockIdInput,
+//    blockid_input::BlockIdInput,
 };
 /* 
 TODO:
