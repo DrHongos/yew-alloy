@@ -1,6 +1,6 @@
 use yew::prelude::*;
 use alloy_primitives::Address;
-use alloy_rpc_types::BlockId;
+use alloy_rpc_types::{BlockId, TransactionRequest};
 use std::ops::Deref;
 use wasm_bindgen_futures::spawn_local;
 use std::ops::BitXorAssign;
@@ -9,54 +9,50 @@ use crate::contexts::ethereum::UseEthereum;
 use crate::components::{
     address_input::AddressInput,
     blockid_input::BlockIdInput,
+    transaction_request_input::TransactionRequestInput,
 };
 /* 
 TODO:
-    - add blockId selector
-    - validate address
+    - create TransactionRequest
+    - sign and send a transaction
     - handle error cases
 
 */
 
-#[function_component(GetBalance)]
-pub fn get_balance() -> Html {
+#[function_component(SendTransaction)]
+pub fn send_transaction() -> Html {
     let open = use_state(|| false); 
-    let address = use_state(|| None as Option<Address>);
+    let request = use_state(|| None as Option<TransactionRequest>);
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
     );
-    let client = ethereum.provider.clone();
-    let block = use_state(|| None as Option<BlockId>);
-    let get_balance = {
-        let client = client.clone();
-        let account = address.clone();
-        let block = block.clone();
+    let provider = ethereum.provider.clone();
+
+    let send_transaction = {
+        let client = provider.clone();
+        let request = request.clone();
         Callback::from(move |_: MouseEvent| {
             if let Some(client) = client.deref() {
                 let client = client.clone();
-                let account = account.clone();
-                let block = block.clone();
+                let request = request.clone();
                 spawn_local(async move {
-                    if let Some(account) = (*account).clone() {
-                        match client.get_balance(account, *block).await {
-                            Ok(b) => log(format!("Balance of {}: {}", account, b).as_str()),
+                    if let Some(req) = (*request).clone() {
+                        crate::helpers::log(format!("TransactionRequest: {:#?}", req).as_str());
+                        match client.send_transaction(req).await {
+                            Ok(b) => log(format!("Tx hash: {}", b).as_str()),
                             Err(rv) => log(format!("Error: {:#?}", rv).as_str())
                         }
                     }
                 })
                 } else { log("disconnected") }
-    })};
+        }
+    )};
 
-    let on_add_address: Callback<Address> = {
-        let a = address.clone();
-        Callback::from(move |addr| {
-            a.set(Some(addr));
-        })
-    };
-    let on_block_entry: Callback<BlockId> = {
-        let b = block.clone();
-        Callback::from(move |inp| {
-            b.set(Some(inp));
+
+    let onset_request: Callback<TransactionRequest> = {
+        let r = request.clone();
+        Callback::from(move |txr| {
+            r.set(Some(txr));
         })
     };
     let toggle_comp = {
@@ -70,7 +66,7 @@ pub fn get_balance() -> Html {
     };
     let button_label = match (*open).clone() {
         true => "Cancel",
-        false => "Balances",
+        false => "Send Transaction",
     };
 
     html!{
@@ -81,20 +77,15 @@ pub fn get_balance() -> Html {
                 </button>
                 if (*open).clone() {
                     <div>
-                        <AddressInput 
-                            on_add={on_add_address}
-                            show_me={true}
-                            placeholder={String::from("Insert address to get balance")}
+                        <TransactionRequestInput 
+                            on_request={onset_request}
                         />
-                        <BlockIdInput
-                            on_block_entry={on_block_entry}
-                        />
-                        if (*address).clone().is_some() {
+                        if (*request).clone().is_some() {
                             <button 
-                                onclick={get_balance} 
+                                onclick={send_transaction} 
                                 class="button"
-                                disabled={(*address).clone().is_none()}
-                            >{"Get balance"}</button>
+                                disabled={(*request).clone().is_none()}
+                            >{"Sign and send"}</button>
                         }
                     </div>
                 }

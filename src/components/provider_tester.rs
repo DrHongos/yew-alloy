@@ -13,6 +13,7 @@ use crate::components::{
     get_logs::GetLogs,
     get_balance::GetBalance,
     call::Call,
+    send_transaction::SendTransaction,
 };
 
 #[function_component(ProviderTest)]
@@ -167,6 +168,7 @@ pub fn provider_tester() -> Html {
                 </div>
                 <GetLogs />
                 <Call />
+                <SendTransaction />
             }
         </div>
     }

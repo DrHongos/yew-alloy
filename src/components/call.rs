@@ -6,7 +6,7 @@ use std::ops::Deref;
 use crate::components::{
     block_selector::BlockSelector,
     blockid_input::BlockIdInput,
-    transaction_request_creator::TransactionRequestCreator,
+    call_request_input::CallRequestInput, 
 };
 use std::ops::BitXorAssign;
 use alloy_rpc_types::{BlockId, CallRequest};
@@ -80,11 +80,11 @@ pub fn call() -> Html {
     html!{
         <div class={"getCode"}>
             if ethereum.is_connected() {
-                <button onclick={toggle_comp} class={"button"}>
+                <button onclick={toggle_comp} class={"button-tool"}>
                     {button_label}
                 </button>
                 if (*open).clone() {
-                    <TransactionRequestCreator 
+                    <CallRequestInput 
                         on_tx={on_tx}
                     />
                     <BlockIdInput 

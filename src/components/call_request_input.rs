@@ -21,8 +21,8 @@ pub struct Props {
     pub on_tx: Callback<CallRequest>,
 }
 
-#[function_component(TransactionRequestCreator)]
-pub fn transaction_request_creator(props: &Props) -> Html {
+#[function_component(CallRequestInput)]
+pub fn call_request_input(props: &Props) -> Html {
     let from = use_state(|| None as Option<Address>);
     let to = use_state(|| None as Option<Address>);
     //let gas_price = use_state(|| None as Option<U128>);
