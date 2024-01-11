@@ -14,6 +14,7 @@ use crate::components::{
     get_balance::GetBalance,
     call::Call,
     send_transaction::SendTransaction,
+    etherscan_api_input::EtherscanApiInput,
 };
 
 #[function_component(ProviderTest)]
@@ -148,6 +149,8 @@ pub fn provider_tester() -> Html {
     html!{
         <div class={"rpc_tester"}>
             if ethereum.is_connected() {
+                <EtherscanApiInput />
+                <hr />
                 <button onclick={logger} class="button">{"log provider"}</button>
                 <button onclick={block_number} class="button">{"blockNumber"}</button>
                 <button onclick={request_accounts} class="button">{"requestAccounts"}</button>

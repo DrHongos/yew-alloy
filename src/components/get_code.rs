@@ -13,27 +13,37 @@ TODO:
 
 */
 
+/* 
+*/
 #[function_component(GetCode)]
 pub fn get_code() -> Html {    
     let address = use_state(|| None as Option<Address>);
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
     );
-    let client = ethereum.provider.clone();
-     
+    let provider = ethereum.provider.clone();
+    let etherscan_client = ethereum.etherscan_client.clone();
+
     let get_code_address = {
         let addr = (*address).clone();
         let chain = ethereum.chain();
         Callback::from(move |_: MouseEvent| {
-            if let Some(client) = client.deref() {
+            if let Some(provider) = provider.deref() {
                 if let Some(addr) = addr {
-                    let client = client.clone();
+                    let provider = provider.clone();
                     spawn_local(async move {
-                        match client.get_code_at(addr, BlockNumberOrTag::Latest).await {
+                        match provider.get_code_at(addr.clone(), BlockNumberOrTag::Latest).await {
                             Ok(d) => log(format!("Code in {} address: {} is {:#?}", chain.unwrap(), &addr, d).as_str()),
                             Err(rv) => log(format!("Error: {:#?}", rv).as_str())
-                        }
-                    })
+                        };
+                    });
+                    if let Some(client) = etherscan_client.deref() {
+                        let client = client.clone();
+                        spawn_local(async move {
+                            let metadata = client.contract_source_code(addr).await.expect("Cannot get code");
+                            log(format!("{:#?}", metadata).as_str());
+                        });
+                    }
                 }
             } else { log("not connected") }
         })

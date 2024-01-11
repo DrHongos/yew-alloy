@@ -10,6 +10,7 @@ use yew::{platform::spawn_local, prelude::*};
 use crate::helpers::log;
 use std::sync::Once;
 use std::sync::Arc;
+use foundry_block_explorers::Client;
 
 #[derive(Clone, Debug)]
 pub struct UseEthereum {
@@ -18,6 +19,7 @@ pub struct UseEthereum {
     pub accounts: UseStateHandle<Option<Vec<Address>>>,
     pub chain: UseStateHandle<Option<Chain>>,
     //pub pairing_url: UseStateHandle<Option<String>>,
+    pub etherscan_client: UseStateHandle<Option<Client>>,
 }
 
 impl PartialEq for UseEthereum {
@@ -75,9 +77,16 @@ impl UseEthereum {
                         let c = provider.get_chain_id().await.unwrap();
                         let c: u64 = c.try_into().unwrap_or(1);
                         this.accounts.set(Some(acc));
-                        this.chain.set(Some(Chain::from_id(c)));
+                        let chain = Chain::from_id(c);
+                        this.chain.set(Some(chain.clone()));
                         this.connected.set(true);
                         this.provider.set(Some(provider));
+                        if let Ok(Some(local_storage)) = web_sys::window().expect("No window?").local_storage() {
+                            if let Ok(Some(value)) = local_storage.get_item("etherscan_api_key") {
+                                log(format!("local storage api key {}", value).as_str());
+                                this.etherscan_client.set(Some(Client::new(chain, value).expect("Cannot create client")));
+                            }
+                        }
                     },
                     None => {log("Rejected connection")}
                 }
@@ -153,13 +162,15 @@ pub fn use_ethereum() -> UseEthereum {  // check SuspensionResult protocol
     let connected = use_state(move || false);
     let accounts = use_state(move || None as Option<Vec<Address>>);
     let chain = use_state(move || None as Option<Chain>);
-    
+    let etherscan_client = use_state(move || None as Option<Client>);
+
     let e = UseEthereum {
         //        ethereum,
         provider,
         connected,
         accounts,
         chain,
+        etherscan_client,
         //        pairing_url,
     };
     // this clones the provider and checks if its connected, if so, it re-connects
