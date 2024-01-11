@@ -3,7 +3,6 @@ use web_sys::HtmlInputElement;
 use crate::contexts::ethereum::UseEthereum;
 use foundry_block_explorers::Client;
 use yew::prelude::*;
-//use wasm_bindgen_futures::spawn_local;
 /* 
 check client is valid
 */
