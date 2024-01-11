@@ -1,14 +1,11 @@
 use yew::prelude::*;
-use alloy_primitives::{Address, U128, U256, Bytes, U8, U64};
-use alloy_rpc_types::{CallRequest, AccessList, CallInput};
+use alloy_primitives::{Address, Bytes};
+use alloy_rpc_types::{CallRequest, CallInput};
 use std::str::FromStr;
 //use crate::helpers::log;
 use crate::contexts::ethereum::UseEthereum;
 use web_sys::HtmlInputElement;
-use crate::components::{
-    address_input::AddressInput,
-    blockid_input::BlockIdInput,
-};
+use crate::components::address_input::AddressInput;
 /* 
 TODO:
     - create parameter encoder (enters method signature and allows to enter arguments, returns Bytes (for txrequest::data))

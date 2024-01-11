@@ -1,22 +1,15 @@
 use yew::prelude::*;
-use alloy_primitives::Address;
-use alloy_rpc_types::{BlockId, TransactionRequest};
+use alloy_rpc_types::TransactionRequest;
 use std::ops::Deref;
 use wasm_bindgen_futures::spawn_local;
 use std::ops::BitXorAssign;
 use crate::helpers::log;
 use crate::contexts::ethereum::UseEthereum;
-use crate::components::{
-    address_input::AddressInput,
-    blockid_input::BlockIdInput,
-    transaction_request_input::TransactionRequestInput,
-};
+use crate::components::transaction_request_input::TransactionRequestInput;
 /* 
 TODO:
-    - create TransactionRequest
-    - sign and send a transaction
+    - add all input fields
     - handle error cases
-
 */
 
 #[function_component(SendTransaction)]

@@ -1,11 +1,6 @@
 use yew::prelude::*;
-use alloy_primitives::{Address, U128, U256, Bytes, U8, U64};
-use alloy_rpc_types::{
-    TransactionRequest, 
-    AccessList, 
-    CallInput,
-    json_u256
-};
+use alloy_primitives::{Address, U256, Bytes};
+use alloy_rpc_types::TransactionRequest;
 use std::str::FromStr;
 use crate::contexts::ethereum::UseEthereum;
 use web_sys::HtmlInputElement;
@@ -14,8 +9,7 @@ use crate::components::{
 };
 /* 
 TODO:
-- error on Address encoding (no checksum?) 
-    - if a do to_checksum() ends up in the same result? how does TransactionRequest encodes?
+- add all input fields
 - handle error cases
 
 */
@@ -42,21 +36,7 @@ pub fn transaction_request_input(props: &Props) -> Html {
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
     );
-    //let chain = ethereum.chain();
-/* 
-    let set_block_hash = {
-        let bh = block_hash.clone();
-        Callback::from(move |e: Event| {
-            let v: HtmlInputElement = e.target_unchecked_into();
-            let p = FixedBytes::from_str(&v.value());
-            if let Ok(p) = p {
-                bh.set(B256::from(p))
-            } else {
-                bh.set(B256::from(FixedBytes::ZERO))
-            }
-        })
-    };
- */
+
     let create_tx_req = {
         let f = ethereum.account().clone();
         let t = to.clone();
@@ -74,6 +54,27 @@ pub fn transaction_request_input(props: &Props) -> Html {
                     gas: None,
                     value: (*v).clone(),
                     data: (*d).clone(),
+                    nonce: None,
+                    access_list: None,
+                    transaction_type: None,
+                }
+            )
+        })
+    };
+    let test_fake_req = {
+        let p = props.on_request.clone();
+        let f = ethereum.account().clone();
+        Callback::from(move |_| {
+            p.emit(
+                TransactionRequest {
+                    from: Some(f),
+                    to: Some(Address::from_str("0x1e5870eb2843119b0a7bedb80e0fbf23e294de34").unwrap()),
+                    gas_price: None,
+                    max_fee_per_gas: None,
+                    max_priority_fee_per_gas: None,
+                    gas: None,  
+                    value: Some(U256::from_str("100000000000000000").unwrap()),
+                    data: None,
                     nonce: None,
                     access_list: None,
                     transaction_type: None,
@@ -113,6 +114,7 @@ pub fn transaction_request_input(props: &Props) -> Html {
     html!{
         <div class={"filter"}>
             if ethereum.is_connected() {
+                <button onclick={test_fake_req}>{"Test"}</button>
                 <small>{"To"}</small>
                 <AddressInput 
                     on_add={on_to}

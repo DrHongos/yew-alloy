@@ -298,6 +298,7 @@ dependencies = [
 [[package]]
 name = "alloy-web"
 version = "0.1.0"
+source = "git+https://github.com/DrHongos/alloy-web#ac6ce7df81fcffb729340e993a2a0dea78f6fee1"
 dependencies = [
  "alloy-chains",
  "alloy-json-rpc",

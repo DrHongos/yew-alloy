@@ -10,7 +10,7 @@ use strum::IntoEnumIterator;
 use serde::Serialize;
 /* 
 TODO:
-    - error.. figure it out!    -> metamask request an object as argument
+    - handle chain not known ("you should add this chain first")
     - initial state (use_effect)
     - disable current chain
     - handle error cases
@@ -37,18 +37,14 @@ pub fn switch_chain() -> Html {
                 let obj = SwitchChainObj {
                     chain_id: (*chain).clone() 
                 };
-                let tdata = serde_json::json!(obj).to_string();
-                let params: Cow<'static, String> = Cow::Owned(tdata);
+                let params: Cow<'static, SwitchChainObj> = Cow::Owned(obj);
                 let client = client.clone();
                 spawn_local(async move {
-                    //if let Ok(client) = client {
-                        //log(format!("{:#?}", &params).as_str());
-                        let req: RpcCall<_, Cow<'static, String>, ()> = client.inner().prepare("wallet_switchEthereumChain", params);
-                        match req.await {
-                            Ok(()) => log(format!("Switched").as_str()),
-                            Err(e) => log(format!("Error! {:#?}",e).as_str())
-                        }     
-                    //} else { log("not connected") }
+                    let req: RpcCall<_, Vec<Cow<'static, SwitchChainObj>>, ()> = client.inner().prepare("wallet_switchEthereumChain", vec![params]);
+                    match req.await {
+                        Ok(()) => log(format!("Switched").as_str()),
+                        Err(e) => log(format!("Error! {:#?}",e).as_str())
+                    }     
                 })
             }
         })
@@ -65,7 +61,6 @@ pub fn switch_chain() -> Html {
     
     let enum_iter = NamedChain::iter();
     let list: Vec<NamedChain> = enum_iter.collect();
-//    let ontest = Callback::from(move |_: MouseEvent| {log(format!("{:#?}", enum_vector).as_str())});
 
     html!{
         <div class={"getCode"}>
@@ -79,10 +74,7 @@ pub fn switch_chain() -> Html {
                         }).collect::<Html>()
                     }
                 </select>
-                //<p>{chain.to_string()}</p>
-                <button onclick={switch_chain} class="select-chain-button">{"Switch (NWY)"}</button>
-                /* if chain != current_chain {
-                } */
+                <button onclick={switch_chain} class="select-chain-button">{"Switch chain"}</button>
             }
         </div>
     }

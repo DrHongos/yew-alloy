@@ -58,10 +58,7 @@ pub fn sign_typed_data() -> Html {
             let client = provider.clone();
             spawn_local(async move {
                 let tdata = json!(data).to_string();
-                let params1: Cow<'static, String> = Cow::Owned(account);
-                let params2: Cow<'static, String> = Cow::Owned(tdata);
-
-                let req: RpcCall<_, Vec<Cow<'static, String>>, String> = client.inner().prepare("eth_signTypedData_v4", vec![params1, params2]);
+                let req: RpcCall<_, Cow<(String, String)>, String> = client.inner().prepare("eth_signTypedData_v4", Cow::Owned((account, tdata)));
 
                 if let Ok(signed) = req.await {
                     let signature = Signature::from_str(&signed).expect("Could not parse Signature");        

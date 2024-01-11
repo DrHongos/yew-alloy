@@ -23,7 +23,8 @@ web-sys = {version="0.3.65", features = ["Window", "Event", "EventTarget"]}
 yew = { version="0.21", features=["csr"] }
 serde_json = "1.0.108"
 
-alloy-web = { path = "../../alloy-web" }
+alloy-web = { git = "https://github.com/DrHongos/alloy-web" }
+#{ path = "../../alloy-web" }
 alloy-chains = "0.1.5"
 # alloy crates
 alloy-providers = { git = "https://github.com/alloy-rs/alloy" }
