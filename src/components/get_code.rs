@@ -7,10 +7,12 @@ use foundry_block_explorers::contract::ContractMetadata;
 use crate::helpers::log;
 use crate::contexts::ethereum::UseEthereum;
 use crate::components::address_input::AddressInput;
-
+use alloy_json_abi::JsonAbi;
 /* 
 TODO:
-    - create a contract abi representation to display 
+    -  display contract abi 
+    https://docs.rs/alloy-json-abi/0.6.0/alloy_json_abi/struct.JsonAbi.html
+
     - add tools to create listeners/send transactions from it
     - handle error cases
 */
@@ -18,6 +20,7 @@ TODO:
 pub fn get_code() -> Html {    
     let address = use_state(|| None as Option<Address>);
     let contract_metadata = use_state(|| None as Option<ContractMetadata>);
+    let contract_abi = use_state(|| None as Option<JsonAbi>);
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
     );
@@ -28,6 +31,7 @@ pub fn get_code() -> Html {
         let addr = (*address).clone();
         let chain = ethereum.chain();
         let contract_metadata = contract_metadata.clone();
+        let contract_abi = contract_abi.clone();
         Callback::from(move |_: MouseEvent| {
             if let Some(provider) = provider.deref() {
                 if let Some(addr) = addr {
@@ -41,9 +45,14 @@ pub fn get_code() -> Html {
                     if let Some(client) = etherscan_client.deref() {
                         let client = client.clone();
                         let cs = contract_metadata.clone();
+                        let cabi = contract_abi.clone();
                         spawn_local(async move {
-                            let metadata = client.contract_source_code(addr).await.expect("Cannot get code");
-                            log(format!("{:#?}", metadata).as_str());
+                            // somethin wrong with Address definition below
+                            let metadata = client.clone().contract_source_code(addr.clone().to_string().parse().unwrap()).await.expect("Cannot get code");
+                            let f = metadata.items.first().unwrap();
+                            let abi = f.abi().expect("Cannot get ABI");
+                            //log(format!("{:#?}", abi).as_str());
+                            cabi.set(Some(abi));
                             cs.set(Some(metadata));
                         });
                     }
@@ -59,6 +68,7 @@ pub fn get_code() -> Html {
         })
     };
 
+    // zip abi?
     let contracts_list = (*contract_metadata)
         .clone()
         .unwrap_or(foundry_block_explorers::contract::ContractMetadata { items: Vec::new() })
@@ -67,7 +77,9 @@ pub fn get_code() -> Html {
         .map(|a| 
             html!(
                 <div>
-                    <p>{a.contract_name}</p>
+                    <p>{a.contract_name}</p>                    
+                    //<p>{format!("Methods: {}", serde_json::json!(a.abi).iter().filter(|e| e.type == "function").collect())}</p>
+                    //<p>{format!("Events: {}", a.abi.iter().filter(|e| e.type == "event").collect())}</p>
                 </div>
             )
         )
@@ -87,7 +99,12 @@ pub fn get_code() -> Html {
                 if let Some(_contracts) = (*contract_metadata).clone() {
                     <hr />
                     {contracts_list}
-//                    <p>{format!("{} contracts loaded", contracts.items.len()).as_str()}</p>
+                }
+                if let Some(abi) = (*contract_abi).clone() {
+                    <hr />
+                    <p>{format!("Functions: {}", abi.functions.len())}</p>
+                    <p>{format!("Events: {}", abi.events.len())}</p>
+
                 }
             }
         </div>
