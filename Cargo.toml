@@ -19,7 +19,7 @@ serde = "1.0.193"
 serde-wasm-bindgen = "0.6.1"
 wasm-bindgen = {version = "0.2.88", features = ["serde-serialize"]}
 wasm-bindgen-futures = "0.4.38"
-web-sys = {version="0.3.65", features = ["Window", "Event", "EventTarget", "Storage"]}
+web-sys = {version="0.3.65", features = ["Window", "Event", "EventTarget", "Storage", "HtmlButtonElement"]}
 yew = { version="0.21", features=["csr"] }
 serde_json = "1.0.108"
 

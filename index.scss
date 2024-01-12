@@ -260,3 +260,12 @@ h1 + .subtitle {
 .address_input button {
   max-width: 15%;
 }
+
+.contract-function {
+  display: flex;
+  border: 1px solid white;
+  padding: 5px;
+}
+.contract-function button {
+  max-width: 10%;
+}
