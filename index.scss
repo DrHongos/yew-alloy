@@ -84,6 +84,28 @@ main {
   font-weight: 800;
   background-color: gold;
 }
+.execute-button {
+  padding: 10px;
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: darkorchid;
+  color: black;
+  font-weight: 750;
+  transition: all 0.25s;
+  cursor: pointer;
+}
+
+.button-event {
+  padding: 10px;
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: darkgreen;
+  color: white;
+  font-weight: 750;
+  transition: all 0.25s;
+  cursor: pointer;
+}
+
 
 .burn:after {
   content: "🔥";
@@ -265,7 +287,24 @@ h1 + .subtitle {
   display: flex;
   border: 1px solid white;
   padding: 5px;
+  border:1px solid black;
 }
-.contract-function button {
-  max-width: 10%;
+
+.contract-event {
+  display: flex;
+  border: 1px solid white;
+  padding: 5px;
+  border:1px solid black;
+}
+.function-table {
+  width: 100%;
+  color: black;
+  background-color: whitesmoke;
+  font-size: small;
+  border-collapse:collapse;
+  border:1px solid black;
+}
+
+.functions-table table td, tr {
+  border:1px solid black;
 }

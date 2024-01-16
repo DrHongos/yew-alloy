@@ -1,14 +1,17 @@
 use yew::prelude::*;
-use alloy_primitives::{Address, Bytes};
-use alloy_rpc_types::{BlockNumberOrTag, CallRequest, CallInput};
-use std::{ops::Deref, str::FromStr};
+use alloy_primitives::Address;
+use alloy_rpc_types::BlockNumberOrTag;
+use std::ops::Deref;
 use wasm_bindgen_futures::spawn_local;
 use foundry_block_explorers::contract::ContractMetadata;
 use crate::helpers::log;
 use crate::contexts::ethereum::UseEthereum;
 use crate::components::address_input::AddressInput;
-use alloy_json_abi::{JsonAbi, Function, StateMutability};
-use web_sys::HtmlButtonElement;
+use alloy_json_abi::{JsonAbi, Function, Event};
+use crate::components::{
+    function_component::FunctionComponent,
+    event_component::EventComponent,
+};
 /* 
 TODO:
     -  display contract abi 
@@ -27,6 +30,8 @@ pub fn get_code() -> Html {
     let contract_metadata = use_state(|| None as Option<ContractMetadata>);
     let contract_abi = use_state(|| None as Option<JsonAbi>);
     let contract_functions = use_state(|| None as Option<Vec<Vec<Function>>>);
+    let contract_events = use_state(|| None as Option<Vec<Vec<Event>>>);
+    
     let ethereum = use_context::<UseEthereum>().expect(
         "No ethereum found. You must wrap your components in an <EthereumContextProvider />",
     );
@@ -39,7 +44,9 @@ pub fn get_code() -> Html {
         let contract_metadata = contract_metadata.clone();
         let contract_abi = contract_abi.clone();
         let contract_functions = contract_functions.clone();
+        let contract_events = contract_events.clone();
         let provider = provider.clone();
+        let etherscan_client = etherscan_client.clone();
         Callback::from(move |_: MouseEvent| {
             if let Some(provider) = provider.deref() {
                 if let Some(addr) = addr {
@@ -55,6 +62,7 @@ pub fn get_code() -> Html {
                         let cs = contract_metadata.clone();
                         let cabi = contract_abi.clone();
                         let cfns = contract_functions.clone();
+                        let cev = contract_events.clone();
                         spawn_local(async move {
                             // somethin wrong with Address definition below
                             let metadata = client.clone().contract_source_code(addr.clone().to_string().parse().unwrap()).await.expect("Cannot get code");
@@ -67,9 +75,19 @@ pub fn get_code() -> Html {
                                 .values()
                                 .map(|f| f.clone())
                                 .collect::<Vec<Vec<Function>>>();
+
+                            let events_list = abi
+                                .clone()
+                                .events
+                                .values()
+                                .map(|f| f.clone())
+                                .collect::<Vec<Vec<Event>>>();
                             //log(format!("Functions {:#?}", functions_list).as_str());
                             if functions_list.len() > 0 {
                                 cfns.set(Some(functions_list));
+                            }
+                            if events_list.len() > 0 {
+                                cev.set(Some(events_list));
                             }
                             cabi.set(Some(abi));
                             cs.set(Some(metadata));
@@ -87,7 +105,7 @@ pub fn get_code() -> Html {
         })
     };
 
-    // zip abi?
+    // zip abi? does it display multi-contracts?
     let contracts_list = (*contract_metadata)
         .clone()
         .unwrap_or(foundry_block_explorers::contract::ContractMetadata { items: Vec::new() })
@@ -97,48 +115,10 @@ pub fn get_code() -> Html {
             html!(
                 <div>
                     <p>{a.contract_name}</p>                    
-                    //<p>{format!("Methods: {}", serde_json::json!(a.abi).iter().filter(|e| e.type == "function").collect())}</p>
-                    //<p>{format!("Events: {}", a.abi.iter().filter(|e| e.type == "event").collect())}</p>
                 </div>
             )
         )
         .collect::<Html>();
-        
-    let call_function = {
-        let provider = provider.clone();
-        let address = (*address).clone();
-        Callback::from(move |e: MouseEvent| {
-            let t: HtmlButtonElement = e.target_unchecked_into();
-            let fn_selector = t.value();
-            let tx = CallRequest {
-                to: address,
-                input: CallInput::new(Bytes::from_str(&fn_selector).expect("Error parsing bytes")),
-                from: None,
-                gas_price: None,
-                max_fee_per_gas: None,
-                max_priority_fee_per_gas: None,
-                gas: None,
-                value: None,
-                nonce: None,
-                chain_id: None,
-                access_list: None,
-                max_fee_per_blob_gas: None,
-                blob_versioned_hashes: None,
-                transaction_type: None,
-            };
-            let provider = provider.clone();
-            spawn_local(async move {
-                log(format!("tx is {:#?}", tx).as_str());
-                if let Some(provider) = (*provider).clone() {
-                    let c = provider.call(tx, None);
-                    match c.await {
-                        Ok(bn) => log(format!("Call result: {}", bn).as_str()),
-                        Err(rv) => log(format!("Error: {:#?}", rv).as_str())
-                    }
-                }
-            })
-        })
-    };
 
     let functions_list_obj = (*contract_functions)
         .clone()
@@ -146,19 +126,30 @@ pub fn get_code() -> Html {
         .into_iter()
         .map(|v|  {
             let v = v.first().unwrap();
-            let selector = v.selector().to_string();
             html!(
-                <div class={"contract_function"}>                    
-                    <b>{&v.name}</b>
-                    <small>{format!(" [{:?}]", v.state_mutability)}</small>
-                    if v.inputs.len() == 0 && v.state_mutability != StateMutability::Payable {
-                        <button onclick={call_function.clone()} value={selector} class={"button"}>{"Call"}</button>
-                    }
-                    //                    <hr />
-                    // add inputs reflecting the Params
-                </div>
-            )}
+                <FunctionComponent 
+                    address={(*address).unwrap_or(Address::ZERO).clone()}
+                    function={(*v).clone()}
+                />
+            )
+        }
         ).collect::<Html>();
+
+    let events_list_obj = (*contract_events)
+        .clone()
+        .unwrap_or(Vec::new())
+        .into_iter()
+        .map(|v|  {
+            let v = v.first().unwrap();
+            html!(
+                <EventComponent
+                    address={(*address).unwrap_or(Address::ZERO).clone()}
+                    event={(*v).clone()}
+                />
+            )
+        }
+        ).collect::<Html>();
+    // same but with events
 
     html!{
         <div class={"getCode"}>
@@ -175,12 +166,8 @@ pub fn get_code() -> Html {
                     <hr />
                     {contracts_list}
                 }
-                if let Some(abi) = (*contract_abi).clone() {
-                    <hr />
-                    <p>{format!("Functions: {}", abi.functions.len())}</p>
-                    <p>{format!("Events: {}", abi.events.len())}</p>
-                }
                 {functions_list_obj}
+                {events_list_obj}
             }
         </div>
     }

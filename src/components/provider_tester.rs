@@ -162,9 +162,9 @@ pub fn provider_tester() -> Html {
 //                <button onclick={set_listeners}>{"listeners"}</button>
                 <div class="shorts">
                     <GetBalance />
-                    <GetCode />
                     <SwitchChain />
                 </div>
+                <GetCode />
                 <div class="shorts">
                     <GetBlock />
                     <SignTypedData />

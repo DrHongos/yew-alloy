@@ -20,4 +20,6 @@ pub mod get_block;
 pub mod send_transaction;
 pub mod call_request_input;
 pub mod etherscan_api_input;
+pub mod function_component;
+pub mod event_component;
 //pub mod printer_test;
