@@ -82,10 +82,14 @@ impl UseEthereum {
                         this.connected.set(true);
                         this.provider.set(Some(provider));
                         if let Ok(Some(local_storage)) = web_sys::window().expect("No window?").local_storage() {
-                            if let Ok(Some(value)) = local_storage.get_item("etherscan_api_key") {
+                            if let Ok(Some(value)) = local_storage.get_item("etherscan_api") {
                                 log(format!("local storage api key {}", value).as_str());
                                 this.etherscan_client.set(Some(Client::new(chain, value).expect("Cannot create client")));
+                            } else {
+                                log("Error getting etherscan api key");
                             }
+                        } else {
+                            log("Error getting local storage");
                         }
                     },
                     None => {log("Rejected connection")}
